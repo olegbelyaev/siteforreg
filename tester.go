@@ -21,8 +21,6 @@ func newlocation(c *gin.Context) {
 	c.HTML(http.StatusOK, "templateAddLocation.html", gin.H{})
 }
 
-// Location - тип данных "площадка"
-
 func inslocation(c *gin.Context) {
 	locname := c.PostForm("locate_name")
 	locadr := c.PostForm("locate_address")
