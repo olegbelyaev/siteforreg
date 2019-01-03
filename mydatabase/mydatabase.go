@@ -1,4 +1,4 @@
-package database
+package mydatabase
 
 import (
 	"context"
@@ -14,8 +14,19 @@ var Ctx = context.Background()
 // Location - тип площадки
 type Location struct {
 	ID      int
-	Name    string
-	Address string
+	Name    string `form:"locate_name" binding:"required"`
+	Address string `form:"locate_address" binding:"required"`
+}
+
+// User - represent User
+type User struct {
+	ID               int
+	Email            string
+	Password         string
+	IsEmailConfirmed bool
+	ConfirmSecret    string
+	Fio              string
+	RoleID           int
 }
 
 // GetDb - возвращает пул соединений с БД
