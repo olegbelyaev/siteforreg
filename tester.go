@@ -57,6 +57,7 @@ func startreg(c *gin.Context) {
 
 }
 
+// GenerateConfirmSecret - generates email comfirm secret parameter
 func GenerateConfirmSecret() string {
 	return "abraka"
 }
@@ -85,7 +86,7 @@ func endreg(c *gin.Context) {
 }
 
 func mainPage(c *gin.Context) {
-	c.HTML(http.StatusOK, "tmp_main.html", gin.H{})
+	c.HTML(http.StatusOK, "tmp_main.html", DefaultH)
 }
 
 func loginEnd(c *gin.Context) {
@@ -111,13 +112,17 @@ func loginEnd(c *gin.Context) {
 	}
 }
 
+var DefaultH = make(map[string]interface{})
+
 func main() {
+
+	DefaultH["aaa"] = "привет"
 
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/*")
 	//router.LoagdHTMLFiles("templates/template1.html", "templates/template2.html")
 
-	router.GET("/main", mainPage)
+	router.GET("/", mainPage)
 
 	router.GET("/form1", usernameForm)
 	router.POST("/form1", saveun)
