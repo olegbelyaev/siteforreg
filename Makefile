@@ -21,4 +21,12 @@ go-run:
 	    SESSION_SECRET=`date`; \
 	fi; \
 	export SESSION_SECRET; \
+	as=admin_secret.txt; \
+	if [ -r admin_secret.txt ]; then \
+	    ADMIN_SECRET=`cat admin_secret.txt`; \
+	else \
+	    ADMIN_SECRET=11; \
+	    echo "WARNING: file admin_secret.txt NOT FOUND. Use: 11"; \
+	fi; \
+	export ADMIN_SECRET; \
 	go run tester.go
