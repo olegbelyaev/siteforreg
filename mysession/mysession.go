@@ -24,7 +24,6 @@ func CookieStore() *sessions.CookieStore {
 	}
 
 	cookieStore := sessions.NewCookieStore([]byte(sessionSecret))
-	// cookieStore := sessions.NewCookieStore([]byte("SESSION_SECRET"))
 	return cookieStore
 }
 
@@ -32,9 +31,6 @@ func CookieStore() *sessions.CookieStore {
 func GetSession(c *gin.Context) *sessions.Session {
 	store := CookieStore()
 	sess, _ := store.Get(c.Request, SessionName)
-	// if err != nil {
-	// 	panic("Can't get session: " + err.Error() + " " + string(sessionSecret))
-	// }
 	return sess
 }
 
