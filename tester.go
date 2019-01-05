@@ -165,8 +165,8 @@ func loginEnd(c *gin.Context) {
 
 // разлогинить пользователя
 func logout(c *gin.Context) {
-	// для разлогина сохраним пустой емаил, по нему пользователь не найдется
-	SaveEmailToSession(c, "")
+	// для разлогина сохраним емаил, по которому пользователь не найдется
+	SaveEmailToSession(c, "logout"+mysession.GetRandomString(15))
 	showMainPage(c)
 }
 
