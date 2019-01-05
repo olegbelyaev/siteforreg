@@ -29,7 +29,8 @@ create table users (
     `role_id` int not null default 4 
     );
 
-INSERT INTO users (id, password, email, is_email_confirmed, confirm_secret, fio, role_id) VALUES (12, "password", "admin", 1,123,"fiiiioooorere",1);
+-- INSERT INTO users (id, password, email, is_email_confirmed, confirm_secret, fio, role_id)
+            -- VALUES (12, "password", "admin", 1,123,"fiiiioooorere",1);
 
 create table locorg (
     `location_id` int not null, 
