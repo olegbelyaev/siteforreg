@@ -4,11 +4,70 @@ import (
 	"database/sql"
 	"net/http"
 
+	"github.com/siteforreg/mysession"
+
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/sessions"
 	"github.com/siteforreg/mydatabase"
 )
+
+// SaveEmailToSession  - сохраняет email пользователя в сессию
+func SaveEmailToSession(c *gin.Context, email string) {
+	sess := mysession.GetSession(c)
+	sess.Values["email"] = email
+	sess.Save(c.Request, c.Writer)
+}
+
+// GetUserFromSession - достает объект User из сессии
+func GetUserFromSession(c *gin.Context) (mydatabase.User, bool) {
+	var user mydatabase.User
+	email, ok := mysession.GetStringValue(c, "email")
+	// panic("email" + email)
+	if !ok {
+		return user, ok
+	}
+	user, ok = mydatabase.FindUserByEmailCached(email)
+	return user, ok
+}
+
+// // HasUserFromSessionLevelUpTo - имеет ли User из сессии (если он там есть) уровень роли >= level
+// func HasUserFromSessionLevelUpTo(c *gin.Context, level int) bool {
+// 	user, ok := GetUserFromSession(c)
+// 	if !ok {
+// 		return false
+// 	}
+// 	role, ok := mydatabase.FindRoleByIDCached(user.ID)
+// 	if !ok {
+// 		return false
+// 	}
+// 	return role.Lvl >= level
+// }
+
+// LoggedUser - IsLogged field answers on question "Is user logged?"
+type LoggedUser struct {
+	IsLogged    bool
+	User        mydatabase.User
+	IsRoleFound bool
+	Role        mydatabase.Role
+}
+
+// GetLoggedUserFromSession - получает из сессии email юзера.
+// Создает структуру User поиском в БД по email. Если не найден - ставит IsLogged=false.
+// Сохраняет юзера в поле User.
+// По полю User.RoleID находит роль в БД. Если не найден ставит IsRoleFound=false.
+// Сохраняет роль в поле Role.
+func GetLoggedUserFromSession(c *gin.Context) LoggedUser {
+	userFromSess, ok := GetUserFromSession(c)
+	var lu = LoggedUser{
+		IsLogged: ok,
+		User:     userFromSess,
+	}
+	if lu.IsLogged {
+		lu.Role, lu.IsRoleFound = mydatabase.FindRoleByIDCached(lu.User.RoleID)
+	}
+	return lu
+}
 
 func usernameForm(c *gin.Context) {
 	c.HTML(http.StatusOK, "template1.html", gin.H{})
@@ -86,6 +145,7 @@ func endreg(c *gin.Context) {
 }
 
 func mainPage(c *gin.Context) {
+	DefaultH["LoggedUser"] = GetLoggedUserFromSession(c)
 	c.HTML(http.StatusOK, "tmp_main.html", DefaultH)
 }
 
@@ -99,24 +159,31 @@ func loginEnd(c *gin.Context) {
 		})
 	} else {
 		if password != user.Password {
+			// юзер найден но пароль не совпадает:
 			c.HTML(http.StatusOK, "login.html", gin.H{
 				"error_msg": "Password incorret.",
 			})
 		} else if !user.IsEmailConfirmed {
+			// юзер найден емаил не подтвержден:
 			c.HTML(http.StatusOK, "login.html", gin.H{
 				"error_msg": "You did't activate your account. Check out your email.",
 			})
 		} else {
-			c.HTML(http.StatusOK, "tmp_main.html", gin.H{})
+			// юзер найден и емаил подтвержден:
+			SaveEmailToSession(c, email)
+			// c.HTML(http.StatusOK, "tmp_main.html", gin.H{})
+			mainPage(c)
 		}
 	}
 }
 
+// DefaultH - набор параметров по умолчанию для передачи в шаблоны
 var DefaultH = make(map[string]interface{})
 
 func main() {
 
 	DefaultH["aaa"] = "привет"
+	// DefaultH["HasUserFromSessionLevelUpTo"] = HasUserFromSessionLevelUpTo
 
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/*")

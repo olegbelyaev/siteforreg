@@ -11,3 +11,5 @@ docker-stop-mysql:
 docker-exec-mysql:
 	docker exec -it mysql mysql -p siteforeg --default-character-set=utf8 
 
+go-run:
+	SESSION_SECRET=HGJHGJHGJHGJHGJHGJHGIUYOIUY go run tester.go

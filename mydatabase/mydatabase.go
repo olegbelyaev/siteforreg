@@ -29,6 +29,13 @@ type User struct {
 	RoleID           int
 }
 
+// Role - represent user role
+type Role struct {
+	ID   int
+	Name string
+	Lvl  int
+}
+
 // GetDb - возвращает пул соединений с БД
 func GetDb() *sql.DB {
 	if Db == nil {

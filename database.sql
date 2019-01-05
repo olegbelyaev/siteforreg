@@ -9,13 +9,14 @@ create table locations (
 
 create table roles (
     `id` int primary key not null,
-    `name` varchar(100) not null default ""
+    `name` varchar(100) not null default "",
+    `lvl` int not null default 1
 );
 
-INSERT INTO roles (id,name) VALUES (1,"root");
-INSERT INTO roles (id,name) VALUES (2,"organizer");
-INSERT INTO roles (id,name) VALUES (3,"lector");
-INSERT INTO roles (id,name) VALUES (4,"listener");
+INSERT INTO roles (id,name,lvl) VALUES (1,"root", 4);
+INSERT INTO roles (id,name,lvl) VALUES (2,"organizer", 3);
+INSERT INTO roles (id,name,lvl) VALUES (3,"lector", 2);
+INSERT INTO roles (id,name,lvl) VALUES (4,"listener", 1);
 
 
 create table users (
