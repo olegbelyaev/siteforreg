@@ -1,7 +1,6 @@
 package mysession
 
 import (
-	"crypto/rand"
 	"os"
 	"strings"
 
@@ -46,17 +45,4 @@ func GetStringValue(c *gin.Context, key string) (string, bool) {
 		return "", ok
 	}
 	return email.(string), ok
-}
-
-// GetRandomString - возвращает массив случайных байт
-func GetRandomString(size int) string {
-	if size < 1 {
-		panic("Size must be >1")
-	}
-	buf := make([]byte, size)
-	_, err := rand.Read(buf)
-	if err != nil {
-		panic("Can't read random")
-	}
-	return string(buf)
 }
