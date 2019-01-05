@@ -14,7 +14,7 @@ import (
 
 // SaveEmailToSession  - сохраняет email пользователя в сессию
 func SaveEmailToSession(c *gin.Context, email string) {
-	sess := mysession.GetSession(c)
+	sess, _ := mysession.GetSession(c)
 	sess.Values["email"] = email
 	sess.Save(c.Request, c.Writer)
 }
@@ -23,26 +23,12 @@ func SaveEmailToSession(c *gin.Context, email string) {
 func GetUserFromSession(c *gin.Context) (mydatabase.User, bool) {
 	var user mydatabase.User
 	email, ok := mysession.GetStringValue(c, "email")
-	// panic("email" + email)
-	if !ok {
-		return user, ok
+	if !ok || len(email) == 0 {
+		return user, false
 	}
 	user, ok = mydatabase.FindUserByEmailCached(email)
 	return user, ok
 }
-
-// // HasUserFromSessionLevelUpTo - имеет ли User из сессии (если он там есть) уровень роли >= level
-// func HasUserFromSessionLevelUpTo(c *gin.Context, level int) bool {
-// 	user, ok := GetUserFromSession(c)
-// 	if !ok {
-// 		return false
-// 	}
-// 	role, ok := mydatabase.FindRoleByIDCached(user.ID)
-// 	if !ok {
-// 		return false
-// 	}
-// 	return role.Lvl >= level
-// }
 
 // LoggedUser - IsLogged field answers on question "Is user logged?"
 type LoggedUser struct {
@@ -78,11 +64,7 @@ func saveun(c *gin.Context) {
 }
 
 func newlocation(c *gin.Context) {
-	var store = sessions.NewCookieStore([]byte("supersecret"))
-	session, err := store.Get(c.Request, "session-name")
-	if err != nil {
-		panic(err.Error())
-	}
+	session, _ := mysession.GetSession(c)
 	lastcname, _ := session.Values["lastlocname"]
 
 	c.HTML(http.StatusOK, "tmp_valid_locations.html", gin.H{
@@ -111,6 +93,7 @@ func inslocation(c *gin.Context) {
 
 }
 
+// вызывает форму регистрации на сайте
 func startreg(c *gin.Context) {
 	c.HTML(http.StatusOK, "registration.html", gin.H{})
 
@@ -123,6 +106,7 @@ func GenerateConfirmSecret() string {
 
 func sendletter(confSecret string) {}
 
+// когда пользователь заполнил форму регистрации нового юзера на сайт
 func endreg(c *gin.Context) {
 	secret := GenerateConfirmSecret()
 	email := c.PostForm("email")
@@ -144,11 +128,13 @@ func endreg(c *gin.Context) {
 
 }
 
-func mainPage(c *gin.Context) {
+// при переходе на главную страницу сайта
+func showMainPage(c *gin.Context) {
 	DefaultH["LoggedUser"] = GetLoggedUserFromSession(c)
 	c.HTML(http.StatusOK, "tmp_main.html", DefaultH)
 }
 
+// пользователь заполнил и отправил форму входа юзера на сайт
 func loginEnd(c *gin.Context) {
 	email := c.PostForm("email")
 	password := c.PostForm("password")
@@ -172,9 +158,16 @@ func loginEnd(c *gin.Context) {
 			// юзер найден и емаил подтвержден:
 			SaveEmailToSession(c, email)
 			// c.HTML(http.StatusOK, "tmp_main.html", gin.H{})
-			mainPage(c)
+			showMainPage(c)
 		}
 	}
+}
+
+// разлогинить пользователя
+func logout(c *gin.Context) {
+	// для разлогина сохраним пустой емаил, по нему пользователь не найдется
+	SaveEmailToSession(c, "")
+	showMainPage(c)
 }
 
 // DefaultH - набор параметров по умолчанию для передачи в шаблоны
@@ -189,7 +182,7 @@ func main() {
 	router.LoadHTMLGlob("templates/*")
 	//router.LoagdHTMLFiles("templates/template1.html", "templates/template2.html")
 
-	router.GET("/", mainPage)
+	router.GET("/", showMainPage)
 
 	router.GET("/form1", usernameForm)
 	router.POST("/form1", saveun)
@@ -200,6 +193,8 @@ func main() {
 		})
 	})
 	router.POST("/login/end", loginEnd)
+
+	router.GET("/logout", logout)
 
 	router.GET("/registration/start", startreg)
 

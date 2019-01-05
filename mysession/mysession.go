@@ -28,15 +28,18 @@ func CookieStore() *sessions.CookieStore {
 }
 
 // GetSession - get cookie store session
-func GetSession(c *gin.Context) *sessions.Session {
+// Note: если получен err!=nil, скорее всего это значит изменился ключ шифрования.
+// Сессия создастся и будет возвращена новая.
+// В этом случае можно игнорировать ошибку.
+func GetSession(c *gin.Context) (*sessions.Session, error) {
 	store := CookieStore()
-	sess, _ := store.Get(c.Request, SessionName)
-	return sess
+	sess, err := store.Get(c.Request, SessionName)
+	return sess, err
 }
 
 // GetStringValue - возвращает ранее сохраненное в сессии строковое значение по ключу key
 func GetStringValue(c *gin.Context, key string) (string, bool) {
-	sess := GetSession(c)
+	sess, _ := GetSession(c)
 	email, ok := sess.Values[key]
 	if !ok {
 		return "", ok
