@@ -37,9 +37,7 @@ func GetSession(c *gin.Context) *sessions.Session {
 // GetStringValue - возвращает ранее сохраненное в сессии строковое значение по ключу key
 func GetStringValue(c *gin.Context, key string) (string, bool) {
 	sess := GetSession(c)
-	// panic(sess.Values)
 	email, ok := sess.Values[key]
-	// panic("email:" + email.(string))
 	if !ok {
 		return "", ok
 	}
