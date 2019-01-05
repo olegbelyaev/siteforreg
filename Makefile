@@ -11,5 +11,14 @@ docker-stop-mysql:
 docker-exec-mysql:
 	docker exec -it mysql mysql -p siteforeg --default-character-set=utf8 
 
+# если не создать файл session_secret.txt с ключом, то при запуске будет генериться новый
+# и всех пользователей сайта разлогинит
 go-run:
-	SESSION_SECRET=HGJHGJHGJHGJHGJHGJHGIUYOIUY go run tester.go
+	if [ -r session_secret.txt ]; then \
+	    SESSION_SECRET=`cat session_secret.txt`; \
+	else \
+	    echo "WARNING: NEW SESSION KEY GENERATED"; \
+	    SESSION_SECRET=`date`; \
+	fi; \
+	export SESSION_SECRET; \
+	go run tester.go
