@@ -19,14 +19,14 @@
         <li class="nav-item">
           <a class="nav-link" href="/locations/new">Locations</a>
         </li>
-
-        {{ if .LoggedUser.IsLogged }}
-        <a href="/logout" class="btn btn-outline-light my-2 my-sm-0" role="button">Logout</a>
-        {{ else }}
-        <a href="/login" class="btn btn-outline-light my-2 my-sm-0" role="button">Log In</a>
-        <a href="/registration/start" class="btn btn-outline-light my-2 my-sm-0" role="button">Sign In</a>
-        {{ end }}
       </ul>
+
+      {{ if .LoggedUser.IsLogged }}
+      <a href="/logout" class="btn btn-outline-light my-2 my-sm-0" role="button">Logout</a>
+      {{ else }}
+      <a href="/login" class="btn btn-outline-light my-2 my-sm-0" role="button">Log In</a>
+      <a href="/registration/start" class="btn btn-outline-light my-2 my-sm-0" role="button">Sign In</a>
+      {{ end }}
 
     </div>
   </nav>
