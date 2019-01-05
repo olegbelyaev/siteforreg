@@ -26,7 +26,7 @@ func GetUserFromSession(c *gin.Context) (mydatabase.User, bool) {
 	if !ok || len(email) == 0 {
 		return user, false
 	}
-	user, ok = mydatabase.FindUserByEmailCached(email)
+	user, ok = mydatabase.FindUserByEmail(email)
 	return user, ok
 }
 
@@ -50,7 +50,7 @@ func GetLoggedUserFromSession(c *gin.Context) LoggedUser {
 		User:     userFromSess,
 	}
 	if lu.IsLogged {
-		lu.Role, lu.IsRoleFound = mydatabase.FindRoleByIDCached(lu.User.RoleID)
+		lu.Role, lu.IsRoleFound = mydatabase.FindRoleByID(lu.User.RoleID)
 	}
 	return lu
 }
@@ -166,7 +166,7 @@ func loginEnd(c *gin.Context) {
 // разлогинить пользователя
 func logout(c *gin.Context) {
 	// для разлогина сохраним емаил, по которому пользователь не найдется
-	SaveEmailToSession(c, "logout"+mysession.GetRandomString(15))
+	SaveEmailToSession(c, "")
 	showMainPage(c)
 }
 

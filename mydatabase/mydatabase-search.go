@@ -1,7 +1,12 @@
 package mydatabase
 
-// FindUserByEmail finding user
+// FindUserByEmail finding user by email
 func FindUserByEmail(email string) (User, bool) {
+	// return FindUserByField("email", email)
+	// }
+
+	// FindUserByField finds user by any one field
+	// func FindUserByStringField(field string, value interface{}) (User, bool) {
 
 	rows, err := GetDb().Query("SELECT * FROM users WHERE email=?", email)
 	if err != nil {
@@ -17,21 +22,6 @@ func FindUserByEmail(email string) (User, bool) {
 		return u, true
 	}
 	return u, false
-}
-
-var cachedUser User
-
-// FindUserByEmailCached - ищет по email в БД и возвращает User, кэшируя значение
-// для ускорения повторного получения
-func FindUserByEmailCached(email string) (User, bool) {
-	if cachedUser.ID == 0 {
-		var ok bool
-		cachedUser, ok = FindUserByEmail(email)
-		if !ok {
-			return cachedUser, false
-		}
-	}
-	return cachedUser, true
 }
 
 // FindRoleByID - поиск роли по ее ID
@@ -51,16 +41,3 @@ func FindRoleByID(id int) (Role, bool) {
 }
 
 var cachedRole Role
-
-// FindRoleByIDCached - ищет по ID Role в БД и возвращает, кэшируя значение
-// для ускорения повторного получения
-func FindRoleByIDCached(id int) (Role, bool) {
-	if cachedRole.ID == 0 {
-		var ok bool
-		cachedRole, ok = FindRoleByID(id)
-		if !ok {
-			return cachedRole, false
-		}
-	}
-	return cachedRole, true
-}
