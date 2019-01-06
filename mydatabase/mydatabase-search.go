@@ -2,13 +2,13 @@ package mydatabase
 
 // FindUserByEmail finding user by email
 func FindUserByEmail(email string) (User, bool) {
-	// return FindUserByField("email", email)
-	// }
+	return FindUserByField("email", email)
+}
 
-	// FindUserByField finds user by any one field
-	// func FindUserByStringField(field string, value interface{}) (User, bool) {
+// FindUserByField finds user by any one field
+func FindUserByField(field string, value interface{}) (User, bool) {
 
-	rows, err := GetDb().Query("SELECT * FROM users WHERE email=?", email)
+	rows, err := GetDb().Query("SELECT * FROM users WHERE "+field+"=?", value)
 	if err != nil {
 		panic("error in sql select: " + err.Error())
 	}

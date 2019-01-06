@@ -175,6 +175,8 @@ var DefaultH = make(map[string]interface{})
 
 func main() {
 
+	mydatabase.AddInitAdmin()
+
 	DefaultH["aaa"] = "привет"
 	// DefaultH["HasUserFromSessionLevelUpTo"] = HasUserFromSessionLevelUpTo
 

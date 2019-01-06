@@ -1,5 +1,7 @@
 package mydatabase
 
+import "os"
+
 // No - test func
 func No() string {
 	return "no"
@@ -24,24 +26,17 @@ func AddUser(u User) {
 		u.ID, u.Password, u.Email, u.IsEmailConfirmed, u.ConfirmSecret, u.Fio, u.RoleID)
 }
 
-/*
-rows, err := conn.QueryContext(ctx, "SELECT * FROM locations")
-	if err != nil {
-		panic("error in sql select")
+// AddInitAdmin - добавляет админа, если его нет в БД
+func AddInitAdmin() {
+	_, ok := FindUserByField("role_id", 1)
+	if !ok {
+		AddUser(User{
+			Email:            "admin",
+			Fio:              "admin-fio",
+			IsEmailConfirmed: true,
+			RoleID:           1,
+			Password:         os.Getenv("ADMIN_SECRET"),
+		})
 	}
 
-	defer rows.Close()
-
-	locations := make([]Location, 0)
-	for rows.Next() {
-		var l Location
-		if err := rows.Scan(&l.id, &l.name, &l.address); err != nil {
-			panic("Scan error:" + err.Error())
-		}
-		locations = append(locations, l)
-	}
-
-	c.HTML(http.StatusOK, "templ_locations.html", gin.H{
-		"locations": locations,
-	})
-*/
+}
