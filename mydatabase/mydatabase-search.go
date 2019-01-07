@@ -73,3 +73,34 @@ func FindLocationsByField(field string, value interface{}) (locations []Location
 	}
 	return
 }
+
+// FindUsersByField
+func FindUsersByField(field string, value interface{}) (users []User) {
+
+	var rows *sql.Rows
+	var err error
+	if len(field) > 0 {
+		// если имя поля непустое
+		rows, err = GetDb().Query("SELECT * FROM users WHERE "+field+"=?", value)
+		if err != nil {
+			panic("error in sql select: " + err.Error())
+		}
+
+	} else {
+		// если имя поля пустое
+		rows, err = GetDb().Query("SELECT * FROM users")
+		if err != nil {
+			panic("error in sql select: " + err.Error())
+		}
+	}
+
+	var u User
+	for rows.Next() {
+		if err := rows.Scan(&u.ID, &u.Password, &u.Email, &u.IsEmailConfirmed,
+			&u.ConfirmSecret, &u.Fio, &u.RoleID); err != nil {
+			panic("Scan error:" + err.Error())
+		}
+		users = append(users, u)
+	}
+	return
+}

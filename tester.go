@@ -82,6 +82,11 @@ func getLocations(c *gin.Context) {
 	c.HTML(http.StatusOK, "locations.html", DefaultH)
 }
 
+func showUsers(c *gin.Context) {
+	DefaultH["users"] = mydatabase.FindUsersByField("", "")
+	c.HTML(http.StatusOK, "show_users.html", DefaultH)
+}
+
 func inslocation(c *gin.Context) {
 	var l mydatabase.Location
 	if err := c.ShouldBind(&l); err != nil {
@@ -215,6 +220,8 @@ func main() {
 	//router.LoagdHTMLFiles("templates/template1.html", "templates/template2.html")
 
 	router.GET("/", showMainPage)
+
+	router.GET("/users", showUsers)
 
 	router.GET("/form1", usernameForm)
 	router.POST("/form1", saveun)

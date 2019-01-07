@@ -1,0 +1,38 @@
+{{ template "_start_html" . }}
+
+<body>
+
+    {{ template "_navbar_main" . }}
+
+    <h1>Users</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Fio</th>
+                <th>Email</th>
+                <th>IsEmailConfirmed</th>
+                <th>RoleID</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{ range $i, $user := .users }}
+            <tr>
+                <td scope="row">{{ .ID }}</td>
+                <td>{{ .Fio }}</td>
+                <td>{{ .Email }}</td>
+                <td>{{ .IsEmailConfirmed }}</td>
+                <td>{{ .RoleID }}</td>
+
+            </tr>
+            {{ end }}
+
+        </tbody>
+    </table>
+
+    <!-- <a href="/user/new" type="button" class="btn btn-light">Создать</a> -->
+
+    {{ template "_bootstrap" . }}
+</body>
+{{template "_end_html" . }}
