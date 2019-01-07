@@ -29,4 +29,10 @@ go-run:
 	    echo "WARNING: file admin_secret.txt NOT FOUND. Use: 11"; \
 	fi; \
 	export ADMIN_SECRET; \
+	if [ -r email_secret.txt ]; then \
+		EMAIL_SECRET=`cat email_secret.txt`; \
+	else \
+		echo "WARNING: file email_secret.txt NOT FOUND"; \
+	fi; \
+	export EMAIL_SECRET; \
 	go run tester.go

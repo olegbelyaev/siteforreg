@@ -3,6 +3,10 @@ package main
 import (
 	"database/sql"
 	"net/http"
+	"net/mail"
+	"os"
+
+	"github.com/siteforreg/myemail"
 
 	"github.com/siteforreg/mysession"
 
@@ -123,9 +127,23 @@ func endreg(c *gin.Context) {
 	} else {
 		mydatabase.AddUser(user)
 		sendletter(secret)
+		// TODO придумать как защититься от многочисленной отправки
+		// пользователем (одной кукой?) писем по разным адресам
+		sendErr := myemail.SendMailWithDefaultParams(
+			// подставить адрес и фио  пользователя из формы
+			mail.Address{Name: "ФИО", Address: "d.l.belyaev@gmail.com"},
+			"Регистрация",
+			"Это текст сообщения ")
+		if sendErr != nil {
+			// TODO здесь вместо паники, выводить сообщение пользователю
+			// на страницу
+			panic("Sending Error:" + sendErr.Error())
+		}
+
+		// panic("----------------OK-----------------")
+
 		c.HTML(http.StatusOK, "registration_end.html", gin.H{})
 	}
-
 }
 
 // при переходе на главную страницу сайта
@@ -176,6 +194,12 @@ var DefaultH = make(map[string]interface{})
 func main() {
 
 	mydatabase.AddInitAdmin()
+
+	myemail.SetParams(
+		"", "sivsite@yandex.ru", os.Getenv("EMAIL_SECRET"),
+		"smtp.yandex.ru", "465",
+		mail.Address{Name: "sitename", Address: "sivsite@yandex.ru"},
+	)
 
 	DefaultH["aaa"] = "привет"
 	// DefaultH["HasUserFromSessionLevelUpTo"] = HasUserFromSessionLevelUpTo
