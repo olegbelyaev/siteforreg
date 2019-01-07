@@ -77,6 +77,11 @@ func newlocation(c *gin.Context) {
 	})
 }
 
+func getLocations(c *gin.Context) {
+	DefaultH["locations"] = mydatabase.FindLocationsByField("", "")
+	c.HTML(http.StatusOK, "locations.html", DefaultH)
+}
+
 func inslocation(c *gin.Context) {
 	var l mydatabase.Location
 	if err := c.ShouldBind(&l); err != nil {
@@ -150,7 +155,7 @@ func endreg(c *gin.Context) {
 // при переходе на главную страницу сайта
 func showMainPage(c *gin.Context) {
 	DefaultH["LoggedUser"] = GetLoggedUserFromSession(c)
-	c.HTML(http.StatusOK, "tmp_main.html", DefaultH)
+	c.HTML(http.StatusOK, "main.html", DefaultH)
 }
 
 // пользователь заполнил и отправил форму входа юзера на сайт
@@ -176,7 +181,7 @@ func loginEnd(c *gin.Context) {
 		} else {
 			// юзер найден и емаил подтвержден:
 			SaveEmailToSession(c, email)
-			// c.HTML(http.StatusOK, "tmp_main.html", gin.H{})
+			// c.HTML(http.StatusOK, "main.html", gin.H{})
 			showMainPage(c)
 		}
 	}
@@ -228,6 +233,7 @@ func main() {
 	router.POST("/registration/end", endreg)
 	locations := router.Group("/locations")
 	{
+		locations.GET("/", getLocations)
 		locations.GET("/new", newlocation)
 		locations.POST("/insert", inslocation)
 	}

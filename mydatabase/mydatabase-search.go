@@ -1,5 +1,9 @@
 package mydatabase
 
+import (
+	"database/sql"
+)
+
 // FindUserByEmail finding user by email
 func FindUserByEmail(email string) (User, bool) {
 	return FindUserByField("email", email)
@@ -40,4 +44,32 @@ func FindRoleByID(id int) (Role, bool) {
 	return r, false
 }
 
-var cachedRole Role
+// FindLocationsByField - ищет площадки по одному из полей или все, если поле пустое
+func FindLocationsByField(field string, value interface{}) (locations []Location) {
+
+	var rows *sql.Rows
+	var err error
+	if len(field) > 0 {
+		// если имя поля непустое
+		rows, err = GetDb().Query("SELECT * FROM locations WHERE "+field+"=?", value)
+		if err != nil {
+			panic("error in sql select: " + err.Error())
+		}
+
+	} else {
+		// если имя поля пустое
+		rows, err = GetDb().Query("SELECT * FROM locations")
+		if err != nil {
+			panic("error in sql select: " + err.Error())
+		}
+	}
+
+	var l Location
+	for rows.Next() {
+		if err := rows.Scan(&l.ID, &l.Name, &l.Address); err != nil {
+			panic("Scan error:" + err.Error())
+		}
+		locations = append(locations, l)
+	}
+	return
+}
