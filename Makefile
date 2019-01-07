@@ -11,9 +11,21 @@ docker-stop-mysql:
 docker-exec-mysql:
 	docker exec -it mysql mysql -p siteforeg --default-character-set=utf8 
 
+
+sudo-go-run:
+	export EMAIL_SECRET; \
+	export PATH="$HOME/bin:$HOME/.local/bin:$PATH:/home/dima/bin/go/bin"; \
+	export GOPATH=/home/dima/go; \
+	export PORT=80; \
+	$(MAKE) run
+
+go-run:
+	export PORT=8081; \
+	$(MAKE) run
+
 # если не создать файл session_secret.txt с ключом, то при запуске будет генериться новый
 # и всех пользователей сайта разлогинит
-go-run:
+run:
 	if [ -r session_secret.txt ]; then \
 	    SESSION_SECRET=`cat session_secret.txt`; \
 	else \
@@ -34,8 +46,5 @@ go-run:
 	else \
 		echo "WARNING: file email_secret.txt NOT FOUND"; \
 	fi; \
-	export EMAIL_SECRET; \
-	export PATH="$HOME/bin:$HOME/.local/bin:$PATH:/home/dima/bin/go/bin"; \
-	export GOPATH=/home/dima/go; \
 	go run tester.go
 

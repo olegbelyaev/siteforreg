@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 	"net/mail"
 	"os"
@@ -231,6 +232,11 @@ func main() {
 		locations.POST("/insert", inslocation)
 	}
 
-	router.Run(":80")
+	port := os.Getenv("PORT")
+	if len(port) == 0 {
+		panic("PORT env not defined!")
+	}
+
+	router.Run(fmt.Sprintf(":%s", port))
 	sql.Drivers()
 }
