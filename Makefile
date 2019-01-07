@@ -35,4 +35,7 @@ go-run:
 		echo "WARNING: file email_secret.txt NOT FOUND"; \
 	fi; \
 	export EMAIL_SECRET; \
+	export PATH="$HOME/bin:$HOME/.local/bin:$PATH:/home/dima/bin/go/bin"; \
+	export GOPATH=/home/dima/go; \
 	go run tester.go
+

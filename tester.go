@@ -6,14 +6,14 @@ import (
 	"net/mail"
 	"os"
 
-	"github.com/siteforreg/myemail"
+	"github.com/olegbelyaev/siteforreg/myemail"
 
-	"github.com/siteforreg/mysession"
+	"github.com/olegbelyaev/siteforreg/mysession"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/sessions"
-	"github.com/siteforreg/mydatabase"
+	"github.com/olegbelyaev/siteforreg/mydatabase"
 )
 
 // SaveEmailToSession  - сохраняет email пользователя в сессию
@@ -231,6 +231,6 @@ func main() {
 		locations.POST("/insert", inslocation)
 	}
 
-	router.Run(":8180")
+	router.Run(":80")
 	sql.Drivers()
 }
