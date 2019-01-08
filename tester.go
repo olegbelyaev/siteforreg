@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/mail"
 	"os"
+	"strconv"
 
 	"github.com/olegbelyaev/siteforreg/myemail"
 
@@ -61,38 +62,54 @@ func GetLoggedUserFromSession(c *gin.Context) LoggedUser {
 }
 
 func usernameForm(c *gin.Context) {
-	c.HTML(http.StatusOK, "template1.html", gin.H{})
+	c.HTML(http.StatusOK, "template1.html", c.Keys)
 }
 
 func saveun(c *gin.Context) {
-	c.HTML(http.StatusOK, "template1.html", gin.H{})
+	c.HTML(http.StatusOK, "template1.html", c.Keys)
 }
 
 func newlocation(c *gin.Context) {
 	session, _ := mysession.GetSession(c)
 	lastcname, _ := session.Values["lastlocname"]
-
-	c.HTML(http.StatusOK, "tmp_valid_locations.html", gin.H{
-		"info_msg": lastcname,
-	})
+	c.Set("info_msg", lastcname)
+	c.HTML(http.StatusOK, "tmp_valid_locations.html", c.Keys)
 }
 
-func getLocations(c *gin.Context) {
-	DefaultH["locations"] = mydatabase.FindLocationsByField("", "")
-	c.HTML(http.StatusOK, "locations.html", DefaultH)
+func showLocations(c *gin.Context) {
+	userID := c.Query("user_id")
+	if len(userID) > 0 {
+		c.Set("locations", mydatabase.FindLocationsByField(userID, ""))
+	}
+	c.Set("locations", mydatabase.FindLocationsByField("", ""))
+	c.HTML(http.StatusOK, "locations.html", c.Keys)
 }
 
 func showUsers(c *gin.Context) {
-	DefaultH["users"] = mydatabase.FindUsersByField("", "")
-	c.HTML(http.StatusOK, "show_users.html", DefaultH)
+	c.Set("users", mydatabase.FindUsersByField("", ""))
+	c.HTML(http.StatusOK, "show_users.html", c.Keys)
+}
+
+func showLocorgs(c *gin.Context) {
+	locationID := c.Query("location_id")
+	userID := c.Query("user_id")
+	var locorgs []mydatabase.LocOrg
+	if len(locationID) > 0 {
+		locorgs = mydatabase.FindLocOrgsByField("location_id", locationID)
+	} else if len(userID) > 0 {
+		locorgs = mydatabase.FindLocOrgsByField("organizer_id", userID)
+	} else {
+		locorgs = mydatabase.FindLocOrgsByField("", "")
+	}
+	c.Set("locorgs", locorgs)
+	c.HTML(http.StatusOK, "show_locorgs.html", c.Keys)
 }
 
 func inslocation(c *gin.Context) {
 	var l mydatabase.Location
 	if err := c.ShouldBind(&l); err != nil {
-		c.HTML(http.StatusOK, "templateAddLocation.html", gin.H{
-			"error_msg": err.Error(),
-		})
+		c.Set("error_msg", err.Error())
+		c.HTML(http.StatusOK, "templateAddLocation.html", c.Keys)
 	}
 
 	var store = sessions.NewCookieStore([]byte("supersecret"))
@@ -104,14 +121,12 @@ func inslocation(c *gin.Context) {
 	session.Save(c.Request, c.Writer)
 
 	mydatabase.AddLocation(l)
-	c.HTML(http.StatusOK, "templ_locations.html", gin.H{})
-
+	c.HTML(http.StatusOK, "templ_locations.html", c.Keys)
 }
 
 // вызывает форму регистрации на сайте
 func startreg(c *gin.Context) {
-	c.HTML(http.StatusOK, "registration.html", gin.H{})
-
+	c.HTML(http.StatusOK, "registration.html", c.Keys)
 }
 
 // GenerateConfirmSecret - generates email comfirm secret parameter
@@ -134,7 +149,7 @@ func endreg(c *gin.Context) {
 	}
 	_, ok := mydatabase.FindUserByEmail(email)
 	if ok {
-		c.HTML(http.StatusOK, "email_exists.html", gin.H{})
+		c.HTML(http.StatusOK, "email_exists.html", c.Keys)
 	} else {
 		mydatabase.AddUser(user)
 		sendletter(secret)
@@ -153,14 +168,13 @@ func endreg(c *gin.Context) {
 
 		// panic("----------------OK-----------------")
 
-		c.HTML(http.StatusOK, "registration_end.html", gin.H{})
+		c.HTML(http.StatusOK, "registration_end.html", c.Keys)
 	}
 }
 
 // при переходе на главную страницу сайта
 func showMainPage(c *gin.Context) {
-	DefaultH["LoggedUser"] = GetLoggedUserFromSession(c)
-	c.HTML(http.StatusOK, "main.html", DefaultH)
+	c.HTML(http.StatusOK, "main.html", c.Keys)
 }
 
 // пользователь заполнил и отправил форму входа юзера на сайт
@@ -169,20 +183,17 @@ func loginEnd(c *gin.Context) {
 	password := c.PostForm("password")
 	user, ok := mydatabase.FindUserByEmail(email)
 	if !ok {
-		c.HTML(http.StatusOK, "login.html", gin.H{
-			"error_msg": "This email not exists.",
-		})
+		c.Set("error_msg", "This email not exists.")
+		c.HTML(http.StatusOK, "login.html", c.Keys)
 	} else {
 		if password != user.Password {
 			// юзер найден но пароль не совпадает:
-			c.HTML(http.StatusOK, "login.html", gin.H{
-				"error_msg": "Password incorret.",
-			})
+			c.Set("error_msg", "Password incorret.")
+			c.HTML(http.StatusOK, "login.html", c.Keys)
 		} else if !user.IsEmailConfirmed {
 			// юзер найден емаил не подтвержден:
-			c.HTML(http.StatusOK, "login.html", gin.H{
-				"error_msg": "You did't activate your account. Check out your email.",
-			})
+			c.Set("error_msg", "You did't activate your account. Check out your email.")
+			c.HTML(http.StatusOK, "login.html", c.Keys)
 		} else {
 			// юзер найден и емаил подтвержден:
 			SaveEmailToSession(c, email)
@@ -199,8 +210,39 @@ func logout(c *gin.Context) {
 	showMainPage(c)
 }
 
-// DefaultH - набор параметров по умолчанию для передачи в шаблоны
-var DefaultH = make(map[string]interface{})
+func addLocOrg(c *gin.Context) {
+	locID := c.PostForm("location_id")
+	if len(locID) > 0 {
+		c.Set("location_id", locID)
+	}
+
+	userID := c.PostForm("user_id")
+	if len(userID) > 0 {
+		c.Set("user_id", userID)
+	}
+
+	if len(locID) == 0 {
+		c.Set("locations", mydatabase.FindLocationsByField("", ""))
+		c.HTML(http.StatusOK, "select_location.html", c.Keys)
+		return
+	}
+	if len(userID) == 0 {
+		c.Set("users", mydatabase.FindUsersByField("", ""))
+		// panic(fmt.Sprintf("------------------>%s", c.Keys))
+		c.HTML(http.StatusOK, "select_user.html", c.Keys)
+		return
+	}
+	locIDint, err := strconv.Atoi(locID)
+	if err != nil {
+		panic("Can't parse as int:" + locID)
+	}
+	userIDint, err := strconv.Atoi(userID)
+	if err != nil {
+		panic("Can't parse as int:" + userID)
+	}
+	mydatabase.AddLocOrg(locIDint, userIDint)
+
+}
 
 func main() {
 
@@ -212,16 +254,16 @@ func main() {
 		mail.Address{Name: "sitename", Address: "sivsite@yandex.ru"},
 	)
 
-	DefaultH["aaa"] = "привет"
-	// DefaultH["HasUserFromSessionLevelUpTo"] = HasUserFromSessionLevelUpTo
-
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/*")
 	//router.LoagdHTMLFiles("templates/template1.html", "templates/template2.html")
 
-	router.GET("/", showMainPage)
+	router.Use(func(c *gin.Context) {
+		c.Set("html_title", "Siteforrreg")
+		c.Set("LoggedUser", GetLoggedUserFromSession(c))
+	})
 
-	router.GET("/users", showUsers)
+	router.GET("/", showMainPage)
 
 	router.GET("/form1", usernameForm)
 	router.POST("/form1", saveun)
@@ -240,10 +282,15 @@ func main() {
 	router.POST("/registration/end", endreg)
 	locations := router.Group("/locations")
 	{
-		locations.GET("/", getLocations)
+		locations.GET("/", showLocations)
 		locations.GET("/new", newlocation)
 		locations.POST("/insert", inslocation)
 	}
+
+	router.GET("/users", showUsers)
+
+	router.GET("/locorgs", showLocorgs)
+	router.Any("/add_locorg", addLocOrg)
 
 	port := os.Getenv("PORT")
 	if len(port) == 0 {

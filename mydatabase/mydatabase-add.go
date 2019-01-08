@@ -26,6 +26,16 @@ func AddUser(u User) {
 		u.ID, u.Password, u.Email, u.IsEmailConfirmed, u.ConfirmSecret, u.Fio, u.RoleID)
 }
 
+// AddLocOrg - добавляет связ площадки и организатора в БД
+func AddLocOrg(locationID int, organiserID int) {
+	conn := GetConn()
+	defer conn.Close()
+	conn.ExecContext(Ctx,
+		`INSERT INTO locorg (location_id, organizer_id)
+	VALUES (?,?)`,
+		locationID, organiserID)
+}
+
 // AddInitAdmin - добавляет админа, если его нет в БД
 func AddInitAdmin() {
 	_, ok := FindUserByField("role_id", 1)

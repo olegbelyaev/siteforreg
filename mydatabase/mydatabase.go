@@ -29,6 +29,12 @@ type User struct {
 	RoleID           int
 }
 
+// LocOrg - represent Locations binded with Organizers
+type LocOrg struct {
+	Location  Location
+	Organizer User
+}
+
 // Role - represent user role
 type Role struct {
 	ID   int

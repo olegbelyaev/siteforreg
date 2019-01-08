@@ -1,0 +1,41 @@
+{{ template "_start_html" . }}
+
+<body>
+
+    {{ template "_navbar_main" . }}
+
+    <form action="/add_locorg" method="POST">
+        <input type="hidden" name="user_id" value="{{ .user_id }}">
+        <h1>Select location</h1>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Address</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{ range $i, $location := .locations }}
+                <tr>
+                    <td scope="row">
+                        {{ .ID }}
+                        <input type="radio" name="location_id" id="{{ .ID }}" value="{{ .ID }}">
+                        <label for="{{ .ID }}">{{ .Name }}</label>
+                    </td>
+                    <td>{{ .Address }}</td>
+                </tr>
+                {{ end }}
+
+            </tbody>
+        </table>
+
+        <button type="submit">Ok</button>
+
+    </form>
+
+    <!-- <a href="/user/new" type="button" class="btn btn-light">Создать</a> -->
+
+    {{ template "_bootstrap" . }}
+</body>
+{{template "_end_html" . }}

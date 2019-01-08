@@ -74,7 +74,7 @@ func FindLocationsByField(field string, value interface{}) (locations []Location
 	return
 }
 
-// FindUsersByField
+// FindUsersByField - ищет пользователей (field=""выбирает все записи)
 func FindUsersByField(field string, value interface{}) (users []User) {
 
 	var rows *sql.Rows
@@ -101,6 +101,48 @@ func FindUsersByField(field string, value interface{}) (users []User) {
 			panic("Scan error:" + err.Error())
 		}
 		users = append(users, u)
+	}
+	return
+}
+
+// FindLocOrgsByField - поиск в таблице locorg по значению поля (или всех если field="")
+func FindLocOrgsByField(field string, value interface{}) (locorgs []LocOrg) {
+
+	var rows *sql.Rows
+	var err error
+	if len(field) > 0 {
+		// если имя поля непустое
+		sql := `SELECT l.*,u.* 
+		FROM locorg lo
+		LEFT JOIN users u ON lo.organizer_id=u.id
+		LEFT JOIN locations l on lo.location_id=l.id
+		WHERE ` + field + "=?"
+
+		// panic(fmt.Sprintf(sql, value))
+		rows, err = GetDb().Query(sql, value)
+		if err != nil {
+			panic("error in sql select: " + err.Error())
+		}
+
+	} else {
+		// если имя поля пустое
+		rows, err = GetDb().Query(`SELECT l.*,u.* FROM locorg lo
+		LEFT JOIN users u ON lo.organizer_id=u.id
+		LEFT JOIN locations l on lo.location_id=l.id`)
+		if err != nil {
+			panic("error in sql select: " + err.Error())
+		}
+	}
+
+	var lo LocOrg
+	for rows.Next() {
+		if err := rows.Scan(&lo.Location.ID, &lo.Location.Name, &lo.Location.Address,
+			&lo.Organizer.ID, &lo.Organizer.Password, &lo.Organizer.Email,
+			&lo.Organizer.IsEmailConfirmed, &lo.Organizer.ConfirmSecret,
+			&lo.Organizer.Fio, &lo.Organizer.RoleID); err != nil {
+			panic("Scan error:" + err.Error())
+		}
+		locorgs = append(locorgs, lo)
 	}
 	return
 }
