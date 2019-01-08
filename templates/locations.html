@@ -20,6 +20,7 @@
                 <td scope="row">{{ .ID }}</td>
                 <td>{{ .Name }}</td>
                 <td>{{ .Address }}</td>
+                <td><a href="/locorgs?location_id={{ .ID }}" role="button" class="btn btn-secondary">Организаторы</a></td>
 
             </tr>
             {{ end }}
