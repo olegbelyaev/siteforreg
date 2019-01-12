@@ -1,3 +1,6 @@
+SHELL := /bin/bash
+
+
 docker-run-mysql:
 	docker  run --name mysql --hostname mysql -p 3306:3306 \
 	-v `pwd`:/docker-entrypoint-initdb.d \
@@ -13,19 +16,18 @@ docker-exec-mysql:
 
 
 sudo-go-run:
-	export EMAIL_SECRET; \
+	@make _export-default-vars; \
 	export PATH="$HOME/bin:$HOME/.local/bin:$PATH:/home/dima/bin/go/bin"; \
 	export GOPATH=/home/dima/go; \
 	export PORT=80; \
-	$(MAKE) run
+	go run tester.go
 
 go-run:
+	source ./export-default-vars.sh; \
 	export PORT=8081; \
-	$(MAKE) run
+	go run tester.go
 
-# если не создать файл session_secret.txt с ключом, то при запуске будет генериться новый
-# и всех пользователей сайта разлогинит
-run:
+_export-default-vars:
 	if [ -r session_secret.txt ]; then \
 	    SESSION_SECRET=`cat session_secret.txt`; \
 	else \
@@ -46,5 +48,7 @@ run:
 	else \
 		echo "WARNING: file email_secret.txt NOT FOUND"; \
 	fi; \
-	go run tester.go
+
+
+	
 
