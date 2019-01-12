@@ -33,6 +33,7 @@
     <form action="/registration/end" method="post" class="needs-validation" novalidate>
 
         <div class="col-md-4 ml-5">
+
             <div class="row">
                 <label for="validationCustom01">Email</label>
                 <input type="text" name="email" class="form-control" id="validationCustom01" placeholder="Your email"
@@ -41,12 +42,13 @@
                     Please provide a valid email.
                 </div>
             </div>
+
             <div class="row">
-                <label for="validationCustom02">Password</label>
-                <input type="text" name="password" class="form-control" id="validationCustom02" placeholder="Create password"
+                <label for="validationCustom02">ФИО</label>
+                <input type="text" name="fio" class="form-control" id="validationCustom02" placeholder="Фамилия Имя Отчество"
                     required>
                 <div class="invalid-feedback">
-                    Please provide a password.
+                    ФИО - обязательное для заполнения поле.
                 </div>
             </div>
 

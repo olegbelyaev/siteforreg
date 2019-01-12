@@ -12,7 +12,6 @@
                 <th>ID</th>
                 <th>Fio</th>
                 <th>Email</th>
-                <th>IsEmailConfirmed</th>
                 <th>RoleID</th>
                 <th>Площадки</th>
             </tr>
@@ -23,7 +22,6 @@
                 <td scope="row">{{ .ID }}</td>
                 <td>{{ .Fio }}</td>
                 <td>{{ .Email }}</td>
-                <td>{{ .IsEmailConfirmed }}</td>
                 <td>{{ .RoleID }}</td>
                 <td><a href="/locorgs?user_id={{ .ID }}" role="button" class="btn btn-secondary">Площадки</a></td>
 

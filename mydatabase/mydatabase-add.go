@@ -17,13 +17,18 @@ func AddLocation(l Location) {
 }
 
 // AddUser -- add new user to mydatabase
-func AddUser(u User) {
+func AddUser(u User) (int64, error) {
 	conn := GetConn()
 	defer conn.Close()
-	conn.ExecContext(Ctx,
-		`INSERT INTO users (id, password, email, is_email_confirmed, confirm_secret, fio, role_id)
-		values(?,?,?,?,?,?,?)`,
-		u.ID, u.Password, u.Email, u.IsEmailConfirmed, u.ConfirmSecret, u.Fio, u.RoleID)
+	result, err := conn.ExecContext(Ctx,
+		`INSERT INTO users (id, password, email, fio, role_id)
+		values(?,?,?,?,?)`,
+		u.ID, u.Password, u.Email, u.Fio, u.RoleID)
+	if err != nil {
+		return 0, err
+	}
+	id, err := result.LastInsertId()
+	return id, err
 }
 
 // AddLocOrg - добавляет связ площадки и организатора в БД
@@ -41,11 +46,10 @@ func AddInitAdmin() {
 	_, ok := FindUserByField("role_id", 1)
 	if !ok {
 		AddUser(User{
-			Email:            "admin",
-			Fio:              "admin-fio",
-			IsEmailConfirmed: true,
-			RoleID:           1,
-			Password:         os.Getenv("ADMIN_SECRET"),
+			Email:    "admin",
+			Fio:      "admin-fio",
+			RoleID:   1,
+			Password: os.Getenv("ADMIN_SECRET"),
 		})
 	}
 

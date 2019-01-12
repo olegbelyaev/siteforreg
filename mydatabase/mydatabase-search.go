@@ -19,8 +19,8 @@ func FindUserByField(field string, value interface{}) (User, bool) {
 
 	var u User
 	for rows.Next() {
-		if err := rows.Scan(&u.ID, &u.Password, &u.Email, &u.IsEmailConfirmed,
-			&u.ConfirmSecret, &u.Fio, &u.RoleID); err != nil {
+		if err := rows.Scan(&u.ID, &u.Password, &u.Email,
+			&u.Fio, &u.RoleID); err != nil {
 			panic("Scan error:" + err.Error())
 		}
 		return u, true
@@ -96,8 +96,8 @@ func FindUsersByField(field string, value interface{}) (users []User) {
 
 	var u User
 	for rows.Next() {
-		if err := rows.Scan(&u.ID, &u.Password, &u.Email, &u.IsEmailConfirmed,
-			&u.ConfirmSecret, &u.Fio, &u.RoleID); err != nil {
+		if err := rows.Scan(&u.ID, &u.Password, &u.Email,
+			&u.Fio, &u.RoleID); err != nil {
 			panic("Scan error:" + err.Error())
 		}
 		users = append(users, u)
@@ -138,7 +138,6 @@ func FindLocOrgsByField(field string, value interface{}) (locorgs []LocOrg) {
 	for rows.Next() {
 		if err := rows.Scan(&lo.Location.ID, &lo.Location.Name, &lo.Location.Address,
 			&lo.Organizer.ID, &lo.Organizer.Password, &lo.Organizer.Email,
-			&lo.Organizer.IsEmailConfirmed, &lo.Organizer.ConfirmSecret,
 			&lo.Organizer.Fio, &lo.Organizer.RoleID); err != nil {
 			panic("Scan error:" + err.Error())
 		}

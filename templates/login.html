@@ -1,32 +1,7 @@
 {{ template "_start_html" . }}
 <body>
 
-    
-          <!-- start nav bar -->
-          <nav class="navbar navbar-expand-lg navbar-dark bg-dark col-12">
-            <a class="navbar-brand" href="#">Navbar</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-              aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-              <span class="navbar-toggler-icon"></span>
-            </button>
-    
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-              <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                  <a class="nav-link" href="/">Home</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="/locations/new">Locations</a>
-                </li>
-    
-              </ul>
-    
-              <a href="/login" class="btn btn-outline-light my-2 my-sm-0" role="button">Log In</a>
-              <a href="/registration/start" class="btn btn-outline-light my-2 my-sm-0" role="button">Sign In</a>
-            </div>
-          </nav>
-          </nav>
-        <!-- end of nav bar -->
+        {{ template "_navbar_main" . }}
         
         <!-- center -->
         <form action="/login/end" method="POST" class="needs-validation" novalidate>
@@ -54,20 +29,10 @@
                 <button type="submit" class="btn btn-primary">Log In</button>
             </div>
         </form>
-        <div class="col-md-6 ml-5">
-            <div id="msg" class="alert alert-primary" role="alert">
-                {{.error_msg}}
-            </div>
-    
-        </div>
 
         <!-- center end -->
         <script>
             // Example starter JavaScript for disabling form submissions if there are invalid fields
-            var msg=$("#msg")
-            if (msg.text != "All is OK"){
-                msg.toggleClass("alert alert-warning");
-            }
             (function () {
                 'use strict';
                 window.addEventListener('load', function () {

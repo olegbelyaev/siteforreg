@@ -3,10 +3,13 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
+	"math/rand"
 	"net/http"
 	"net/mail"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/olegbelyaev/siteforreg/myemail"
 
@@ -108,7 +111,7 @@ func showLocorgs(c *gin.Context) {
 func inslocation(c *gin.Context) {
 	var l mydatabase.Location
 	if err := c.ShouldBind(&l); err != nil {
-		c.Set("error_msg", err.Error())
+		c.Set("warning_msg", err.Error())
 		c.HTML(http.StatusOK, "templateAddLocation.html", c.Keys)
 	}
 
@@ -129,39 +132,54 @@ func startreg(c *gin.Context) {
 	c.HTML(http.StatusOK, "registration.html", c.Keys)
 }
 
-// GenerateConfirmSecret - generates email comfirm secret parameter
-func GenerateConfirmSecret() string {
-	return "abraka"
+// GenerateSecret - generates random password
+func GenerateSecret() string {
+	rand.Seed(time.Now().UnixNano())
+	digits := "0123456789"
+	all := "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+		"abcdefghijklmnopqrstuvwxyz" +
+		digits
+	length := 10
+	buf := make([]byte, length)
+	buf[0] = digits[rand.Intn(len(digits))]
+	for i := 1; i < length; i++ {
+		buf[i] = all[rand.Intn(len(all))]
+	}
+	rand.Shuffle(len(buf), func(i, j int) {
+		buf[i], buf[j] = buf[j], buf[i]
+	})
+	return string(buf)
 }
 
 // когда пользователь заполнил форму регистрации нового юзера на сайт
 func endreg(c *gin.Context) {
 	email := c.PostForm("email")
-	secret := GenerateConfirmSecret()
+	secret := GenerateSecret()
 	user := mydatabase.User{
-		Email:         email,
-		Password:      c.PostForm("password"),
-		ConfirmSecret: secret,
-		Fio:           c.PostForm("fio"),
-		RoleID:        4,
+		Email:    email,
+		Password: secret,
+		Fio:      c.PostForm("fio"),
+		RoleID:   4,
 	}
 	_, ok := mydatabase.FindUserByEmail(email)
 	if ok {
-		// todo: здесь должна быть ссылка или форма на сброс пароля
+		// todo: Пользователь уже существует, здесь должна быть ссылка или форма на сброс пароля
 		c.HTML(http.StatusOK, "email_exists.html", c.Keys)
 	} else {
 		// TODO придумать как защититься от многочисленной отправки
-		// пользователем (одной кукой?) писем по разным адресам
+		// пользователем писем по разным адресам
 		siteAddress := "http://localhost:8081"
 		emailText := fmt.Sprintf(
 			`Здравствуйте, %s !
-			Вы зарегистрировались на сайте %s .
-			Для подтверждения почты, перейдите по ссылке %s/confirmemail/%s`,
-			user.Fio, siteAddress, siteAddress, secret)
+Вы зарегистрировались на сайте %s .
+Ваш пароль: %s
+			`, user.Fio, siteAddress, secret)
 
 		sendErr := myemail.SendMailWithDefaultParams(
 			mail.Address{Name: user.Fio, Address: user.Email},
-			"Регистрация", emailText)
+			fmt.Sprintf("Регистрация на %s", siteAddress),
+			emailText,
+		)
 		if sendErr != nil {
 			// TODO здесь вместо паники, выводить сообщение пользователю
 			// на страницу
@@ -170,33 +188,12 @@ func endreg(c *gin.Context) {
 
 		// panic("----------------OK-----------------")
 
-		mydatabase.AddUser(user)
-		c.HTML(http.StatusOK, "registration_end.html", c.Keys)
-	}
-}
-
-func confirmemail(c *gin.Context) {
-	confirmSecret := c.Param("secret")
-	if len(confirmSecret) < 6 {
-		c.Set("error_msg", "Код неправильный")
+		_, err := mydatabase.AddUser(user)
+		if err != nil {
+			log.Printf("Can't add user %v: %s", user, err.Error())
+		}
 		c.HTML(http.StatusOK, "main.html", c.Keys)
-		return
 	}
-	user, ok := mydatabase.FindUserByField("confirm_secret", confirmSecret)
-	if !ok {
-		c.Set("error_msg", "Код неправильный!")
-		c.HTML(http.StatusOK, "main.html", c.Keys)
-		return
-	}
-	user.IsEmailConfirmed = true
-	user.ConfirmSecret = ""
-	_, err := mydatabase.UpdateUser(user)
-	if err != nil {
-		// todo: вместо паники что-то придумать
-		panic(err.Error())
-	}
-	c.Set("info_msg", "Email подтвержден.")
-	c.HTML(http.StatusOK, "main.html", c.Keys)
 }
 
 // при переходе на главную страницу сайта
@@ -210,16 +207,12 @@ func loginEnd(c *gin.Context) {
 	password := c.PostForm("password")
 	user, ok := mydatabase.FindUserByEmail(email)
 	if !ok {
-		c.Set("error_msg", "This email not exists.")
+		c.Set("warning_msg", "This email not exists.")
 		c.HTML(http.StatusOK, "login.html", c.Keys)
 	} else {
 		if password != user.Password {
 			// юзер найден но пароль не совпадает:
-			c.Set("error_msg", "Password incorret.")
-			c.HTML(http.StatusOK, "login.html", c.Keys)
-		} else if !user.IsEmailConfirmed {
-			// юзер найден емаил не подтвержден:
-			c.Set("error_msg", "You did't activate your account. Check out your email.")
+			c.Set("warning_msg", "Password incorret.")
 			c.HTML(http.StatusOK, "login.html", c.Keys)
 		} else {
 			// юзер найден и емаил подтвержден:
@@ -297,9 +290,7 @@ func main() {
 	router.POST("/form1", saveun)
 
 	router.GET("/login", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "login.html", gin.H{
-			"error_msg": "All is OK",
-		})
+		c.HTML(http.StatusOK, "login.html", c.Keys)
 	})
 	router.POST("/login/end", loginEnd)
 
@@ -309,7 +300,7 @@ func main() {
 
 	router.POST("/registration/end", endreg)
 
-	router.GET("/confirmemail/:secret", confirmemail)
+	// router.GET("/confirmemail/:secret", confirmemail)
 
 	locations := router.Group("/locations")
 	{
