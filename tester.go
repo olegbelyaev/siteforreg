@@ -134,12 +134,10 @@ func GenerateConfirmSecret() string {
 	return "abraka"
 }
 
-func sendletter(confSecret string) {}
-
 // когда пользователь заполнил форму регистрации нового юзера на сайт
 func endreg(c *gin.Context) {
-	secret := GenerateConfirmSecret()
 	email := c.PostForm("email")
+	secret := GenerateConfirmSecret()
 	user := mydatabase.User{
 		Email:         email,
 		Password:      c.PostForm("password"),
@@ -149,17 +147,21 @@ func endreg(c *gin.Context) {
 	}
 	_, ok := mydatabase.FindUserByEmail(email)
 	if ok {
+		// todo: здесь должна быть ссылка или форма на сброс пароля
 		c.HTML(http.StatusOK, "email_exists.html", c.Keys)
 	} else {
-		mydatabase.AddUser(user)
-		sendletter(secret)
 		// TODO придумать как защититься от многочисленной отправки
 		// пользователем (одной кукой?) писем по разным адресам
+		siteAddress := "http://localhost:8081"
+		emailText := fmt.Sprintf(
+			`Здравствуйте, %s !
+			Вы зарегистрировались на сайте %s .
+			Для подтверждения почты, перейдите по ссылке %s/confirmemail/%s`,
+			user.Fio, siteAddress, siteAddress, secret)
+
 		sendErr := myemail.SendMailWithDefaultParams(
-			// подставить адрес и фио  пользователя из формы
-			mail.Address{Name: "ФИО", Address: "d.l.belyaev@gmail.com"},
-			"Регистрация",
-			"Это текст сообщения ")
+			mail.Address{Name: user.Fio, Address: user.Email},
+			"Регистрация", emailText)
 		if sendErr != nil {
 			// TODO здесь вместо паники, выводить сообщение пользователю
 			// на страницу
@@ -168,8 +170,33 @@ func endreg(c *gin.Context) {
 
 		// panic("----------------OK-----------------")
 
+		mydatabase.AddUser(user)
 		c.HTML(http.StatusOK, "registration_end.html", c.Keys)
 	}
+}
+
+func confirmemail(c *gin.Context) {
+	confirmSecret := c.Param("secret")
+	if len(confirmSecret) < 6 {
+		c.Set("error_msg", "Код неправильный")
+		c.HTML(http.StatusOK, "main.html", c.Keys)
+		return
+	}
+	user, ok := mydatabase.FindUserByField("confirm_secret", confirmSecret)
+	if !ok {
+		c.Set("error_msg", "Код неправильный!")
+		c.HTML(http.StatusOK, "main.html", c.Keys)
+		return
+	}
+	user.IsEmailConfirmed = true
+	user.ConfirmSecret = ""
+	_, err := mydatabase.UpdateUser(user)
+	if err != nil {
+		// todo: вместо паники что-то придумать
+		panic(err.Error())
+	}
+	c.Set("info_msg", "Email подтвержден.")
+	c.HTML(http.StatusOK, "main.html", c.Keys)
 }
 
 // при переходе на главную страницу сайта
@@ -252,6 +279,7 @@ func main() {
 		"", "sivsite@yandex.ru", os.Getenv("EMAIL_SECRET"),
 		"smtp.yandex.ru", "465",
 		mail.Address{Name: "sitename", Address: "sivsite@yandex.ru"},
+		true,
 	)
 
 	router := gin.Default()
@@ -280,6 +308,9 @@ func main() {
 	router.GET("/registration/start", startreg)
 
 	router.POST("/registration/end", endreg)
+
+	router.GET("/confirmemail/:secret", confirmemail)
+
 	locations := router.Group("/locations")
 	{
 		locations.GET("/", showLocations)
