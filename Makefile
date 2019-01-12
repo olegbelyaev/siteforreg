@@ -2,17 +2,17 @@ SHELL := /bin/bash
 
 
 docker-run-mysql:
-	docker  run --name mysql --hostname mysql -p 3306:3306 \
+	docker  run --name site-forreg-mysql --hostname site-forreg-mysql -p 3306:3306 \
 	-v `pwd`:/docker-entrypoint-initdb.d \
 	--rm -it -e MYSQL_ROOT_PASSWORD=11 -d \
 	mysql --character-set-server=utf8mb4 \
 	--collation-server=utf8mb4_unicode_ci
 
 docker-stop-mysql:
-	docker stop mysql
+	docker stop site-forreg-mysql
 
 docker-exec-mysql:
-	docker exec -it mysql mysql -p siteforeg --default-character-set=utf8 
+	docker exec -it site-forreg-mysql mysql -p siteforeg --default-character-set=utf8 
 
 
 sudo-go-run:
