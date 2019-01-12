@@ -14,9 +14,10 @@ create table roles (
 );
 
 INSERT INTO roles (id,name,lvl) VALUES (1,"root", 4);
-INSERT INTO roles (id,name,lvl) VALUES (2,"organizer", 3);
-INSERT INTO roles (id,name,lvl) VALUES (3,"lector", 2);
-INSERT INTO roles (id,name,lvl) VALUES (4,"listener", 1);
+-- есть идея что остальные роли не нужны
+-- INSERT INTO roles (id,name,lvl) VALUES (2,"organizer", 3);
+-- INSERT INTO roles (id,name,lvl) VALUES (3,"lector", 2);
+-- INSERT INTO roles (id,name,lvl) VALUES (4,"listener", 1);
 
 
 create table users (
