@@ -39,3 +39,15 @@ go-run:
 	export GOPATH=/home/dima/go; \
 	go run tester.go
 
+run-webhook:
+	if [ -r webhook_secret.txt ]; then \
+		WEBHOOK_SECRET=`cat webhook_secret.txt`; \
+	else \
+		echo "WARNING: file webhook_secret.txt NOT FOUND"; \
+	fi; \
+	export WEBHOOK_SECRET; \
+	go run webhook.go
+
+
+test:
+	echo "test-ok"
