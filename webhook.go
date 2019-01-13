@@ -15,10 +15,32 @@ func main() {
     if len(secret)==0 {
 	panic("WEBHOOK_SECRET env not defined")
     }
+
     r := gin.Default()
+
     r.GET("/webhook/:action/:secret", func(c *gin.Context) {
 	givenAction := c.Param("action")
 	givenSecret := c.Param("secret")
+	webhook(c,givenAction,givenSecret,secret)
+    })
+
+    r.POST("/webhook", func(c *gin.Context){
+	givenAction := c.PostForm("action")
+	givenSecret := c.PostForm("secret")
+	webhook(c,givenAction,givenSecret,secret)
+    } )
+    
+    r.Run(":5001") 
+}
+
+func webhook(c *gin.Context, givenAction string, givenSecret string, secret string){
+
+	if len(givenAction)==0 {
+	    c.JSON(400, gin.H{
+	        "message": "empty action",
+	    })
+	    return
+	}
 
 	if givenSecret!=secret{
 	    c.JSON(400, gin.H{
@@ -38,7 +60,5 @@ func main() {
 	if err != nil {
 	    log.Printf("%s", stdoutStderr)
 	}
-    
-    })
-    r.Run(":5001") 
+
 }
