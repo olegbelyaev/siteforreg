@@ -14,53 +14,41 @@ docker-stop-mysql:
 docker-exec-mysql:
 	docker exec -it site-forreg-mysql mysql -p siteforeg --default-character-set=utf8 
 
+sudo-go-run-fork:
+	./fork.pl -pf=siteforreg.pid --single "make sudo-go-run" >> siteforrreg.log  2>&1
 
 sudo-go-run:
-	@make _export-default-vars; \
-	export PATH="$HOME/bin:$HOME/.local/bin:$PATH:/home/dima/bin/go/bin"; \
+	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
+	source ./export-siteforreg-vars.sh; \
+	export PATH="${HOME}/bin:${HOME}/.local/bin:${PATH}:/home/dima/bin/go/bin"; \
 	export GOPATH=/home/dima/go; \
 	export PORT=80; \
-	go run tester.go
+	go run tester.go 
+
+docker-run-go:
+	
 
 go-run:
-	source ./export-default-vars.sh; \
+	source ./export-siteforreg-vars.sh; \
 	export PORT=8081; \
 	go run tester.go
-
-_export-default-vars:
-	if [ -r session_secret.txt ]; then \
-	    SESSION_SECRET=`cat session_secret.txt`; \
-	else \
-	    echo "WARNING: NEW SESSION KEY GENERATED"; \
-	    SESSION_SECRET=`date`; \
-	fi; \
-	export SESSION_SECRET; \
-	as=admin_secret.txt; \
-	if [ -r admin_secret.txt ]; then \
-	    ADMIN_SECRET=`cat admin_secret.txt`; \
-	else \
-	    ADMIN_SECRET=11; \
-	    echo "WARNING: file admin_secret.txt NOT FOUND. Use: 11"; \
-	fi; \
-	export ADMIN_SECRET; \
-	if [ -r email_secret.txt ]; then \
-		EMAIL_SECRET=`cat email_secret.txt`; \
-	else \
-		echo "WARNING: file email_secret.txt NOT FOUND"; \
-	fi; \
 
 
 	
 
-run-webhook:
+run-webhook-server:
+	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
 	if [ -r webhook_secret.txt ]; then \
 		WEBHOOK_SECRET=`cat webhook_secret.txt`; \
 	else \
 		echo "WARNING: file webhook_secret.txt NOT FOUND"; \
 	fi; \
 	export WEBHOOK_SECRET; \
+	export PATH="${HOME}/bin:$HOME/.local/bin:${PATH}:${HOME}/bin/go/bin"; \
+	export GOPATH=/home/dima/go; \
 	go run webhook.go
 
 
-test:
+echo-ok:
 	echo "test-ok"
+

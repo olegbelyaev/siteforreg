@@ -2,4 +2,6 @@ session_secret.txt
 admin_secret.txt
 email_secret.txt
 webhook_secret.txt
-log.log
+*.log
+*.pid
+*.PID
