@@ -1,0 +1,23 @@
+{{ template "_start_html" . }}
+
+<body>
+
+  {{ template "_navbar_main" . }}
+
+  <h1>Welcome to Main Page!</h1>
+  {{ if .LoggedUser.IsLogged }}
+  Пользователь зареган
+  FIO:{{ .LoggedUser.User.Fio }} {{ .LoggedUser.User.Email }}
+  <a href="/" class="btn btn-outline-light my-2 my-sm-0" role="button">Hello</a>
+  <a href="/" class="btn btn-outline-light my-2 my-sm-0" role="button">my friend!</a>
+  {{ else }}
+  Не зареган
+  NOLOGGED
+  {{ end }}
+
+
+
+
+  {{template "_bootstrap" . }}
+</body>
+{{template "_end_html" . }}

@@ -3,6 +3,7 @@ package myemail
 import (
 	"crypto/tls"
 	"fmt"
+	"log"
 	"net/mail"
 	"net/smtp"
 )
@@ -32,7 +33,13 @@ var Auth smtp.Auth
 var TLSConfig tls.Config
 
 // SetParams - сохраняет параметры по умолчанию для дальнейшего спользования
-func SetParams(identiti, username, password, host, port string, from mail.Address) {
+func SetParams(identiti, username, password, host, port string, from mail.Address, fatalOnEmpty bool) {
+	if fatalOnEmpty {
+		if len(password) == 0 {
+			log.Fatal("WARNING: email password is empty!")
+		}
+	}
+
 	Identiti = identiti
 	Username = username
 	Password = password
@@ -69,6 +76,9 @@ func SendMailWithDefaultParams(to mail.Address, subj string, body string) error 
 	}
 
 	conn, err := tls.Dial("tcp", serverAddress, &TLSConfig)
+	if err != nil {
+		return err
+	}
 
 	c, err := smtp.NewClient(conn, Host)
 	if err != nil {
@@ -77,6 +87,7 @@ func SendMailWithDefaultParams(to mail.Address, subj string, body string) error 
 
 	// Auth
 	if err = c.Auth(Auth); err != nil {
+		fmt.Printf("Warning: error while c.Auth: %s, %v", err.Error(), Auth)
 		return err
 	}
 

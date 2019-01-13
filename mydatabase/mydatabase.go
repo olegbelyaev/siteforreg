@@ -20,13 +20,17 @@ type Location struct {
 
 // User - represent User
 type User struct {
-	ID               int
-	Email            string
-	Password         string
-	IsEmailConfirmed bool
-	ConfirmSecret    string
-	Fio              string
-	RoleID           int
+	ID       int
+	Email    string
+	Password string
+	Fio      string
+	RoleID   int
+}
+
+// LocOrg - represent Locations binded with Organizers
+type LocOrg struct {
+	Location  Location
+	Organizer User
 }
 
 // Role - represent user role

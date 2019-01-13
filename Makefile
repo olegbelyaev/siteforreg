@@ -1,19 +1,33 @@
+SHELL := /bin/bash
+
+
 docker-run-mysql:
-	docker  run --name mysql --hostname mysql -p 3306:3306 \
+	docker  run --name site-forreg-mysql --hostname site-forreg-mysql -p 3306:3306 \
 	-v `pwd`:/docker-entrypoint-initdb.d \
 	--rm -it -e MYSQL_ROOT_PASSWORD=11 -d \
 	mysql --character-set-server=utf8mb4 \
 	--collation-server=utf8mb4_unicode_ci
 
 docker-stop-mysql:
-	docker stop mysql
+	docker stop site-forreg-mysql
 
 docker-exec-mysql:
-	docker exec -it mysql mysql -p siteforeg --default-character-set=utf8 
+	docker exec -it site-forreg-mysql mysql -p siteforeg --default-character-set=utf8 
 
-# если не создать файл session_secret.txt с ключом, то при запуске будет генериться новый
-# и всех пользователей сайта разлогинит
+
+sudo-go-run:
+	@make _export-default-vars; \
+	export PATH="$HOME/bin:$HOME/.local/bin:$PATH:/home/dima/bin/go/bin"; \
+	export GOPATH=/home/dima/go; \
+	export PORT=80; \
+	go run tester.go
+
 go-run:
+	source ./export-default-vars.sh; \
+	export PORT=8081; \
+	go run tester.go
+
+_export-default-vars:
 	if [ -r session_secret.txt ]; then \
 	    SESSION_SECRET=`cat session_secret.txt`; \
 	else \
@@ -34,10 +48,9 @@ go-run:
 	else \
 		echo "WARNING: file email_secret.txt NOT FOUND"; \
 	fi; \
-	export EMAIL_SECRET; \
-	export PATH="$HOME/bin:$HOME/.local/bin:$PATH:/home/dima/bin/go/bin"; \
-	export GOPATH=/home/dima/go; \
-	go run tester.go
+
+
+	
 
 run-webhook:
 	if [ -r webhook_secret.txt ]; then \

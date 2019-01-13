@@ -1,0 +1,38 @@
+{{ template "_start_html" . }}
+
+<body>
+
+    {{ template "_navbar_main" . }}
+
+    <h1>Users</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Fio</th>
+                <th>Email</th>
+                <th>RoleID</th>
+                <th>Площадки</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{ range $i, $user := .users }}
+            <tr>
+                <td scope="row">{{ .ID }}</td>
+                <td>{{ .Fio }}</td>
+                <td>{{ .Email }}</td>
+                <td>{{ .RoleID }}</td>
+                <td><a href="/locorgs?user_id={{ .ID }}" role="button" class="btn btn-secondary">Площадки</a></td>
+
+            </tr>
+            {{ end }}
+
+        </tbody>
+    </table>
+
+    <!-- <a href="/user/new" type="button" class="btn btn-light">Создать</a> -->
+
+    {{ template "_bootstrap" . }}
+</body>
+{{template "_end_html" . }}

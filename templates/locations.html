@@ -1,0 +1,35 @@
+{{ template "_start_html" . }}
+
+<body>
+
+    {{ template "_navbar_main" . }}
+
+    <h1>Locations</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Address</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{ range $i, $location := .locations }}
+            <tr>
+                <td scope="row">{{ .ID }}</td>
+                <td>{{ .Name }}</td>
+                <td>{{ .Address }}</td>
+                <td><a href="/locorgs?location_id={{ .ID }}" role="button" class="btn btn-secondary">Организаторы</a></td>
+
+            </tr>
+            {{ end }}
+
+        </tbody>
+    </table>
+
+    <a href="/locations/new" type="button" class="btn btn-light">Создать</a>
+
+    {{ template "_bootstrap" . }}
+</body>
+{{template "_end_html" . }}
