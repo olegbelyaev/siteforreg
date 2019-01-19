@@ -24,8 +24,8 @@ docker-exec-mysql:
 	# от юзера: подключение к mysql для выполнения команд
 
 mysql-dump:
-	mkdir -p databackup; \
-	docker exec site-forreg-mysql sh -c 'exec mysqldump --all-databases -uroot -p"$$MYSQL_ROOT_PASSWORD"' | gzip > ./databackup/all-db.sql.gz
+	mkdir -p backup; \
+	docker exec site-forreg-mysql sh -c 'exec mysqldump --all-databases -uroot -p"$$MYSQL_ROOT_PASSWORD"' | gzip > ./backup/all-db.sql.gz
 
 sudo-siteforreg-fork-run:
 	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
