@@ -5,3 +5,4 @@ webhook_secret.txt
 *.log
 *.pid
 *.PID
+databackup/*

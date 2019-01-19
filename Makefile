@@ -1,21 +1,30 @@
 SHELL := /bin/bash
 
-
 docker-run-mysql:
 	docker  run --name site-forreg-mysql --hostname site-forreg-mysql -p 3306:3306 \
 	-v `pwd`:/docker-entrypoint-initdb.d \
-	--rm -it -e MYSQL_ROOT_PASSWORD=11 -d \
+	-it -e MYSQL_ROOT_PASSWORD=11 -d \
 	mysql --character-set-server=utf8mb4 \
 	--collation-server=utf8mb4_unicode_ci ;\
 	# от юзера: запуск mysql
 
+docker-start-mysql:
+	docker start site-forreg-mysql \
+	# запуск остановленного контейнера
+
+
 docker-stop-mysql:
+	make mysql-dump; \
 	docker stop site-forreg-mysql ;\
 	# от юзера остановка mysql
+
 
 docker-exec-mysql:
 	docker exec -it site-forreg-mysql mysql -p siteforeg --default-character-set=utf8 ;\
 	# от юзера: подключение к mysql для выполнения команд
+
+mysql-dump:
+	docker exec site-forreg-mysql sh -c 'exec mysqldump --all-databases -uroot -p"$$MYSQL_ROOT_PASSWORD"' | gzip > ./databackup/all-db.sql.gz
 
 sudo-siteforreg-fork-run:
 	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
