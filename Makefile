@@ -55,7 +55,7 @@ siteforreg-run:
 
 	
 
-run-webhook-server:
+sudo-webhook-server-run:
 	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
 	if [ -r webhook_secret.txt ]; then \
 		WEBHOOK_SECRET=`cat webhook_secret.txt`; \
@@ -69,6 +69,14 @@ run-webhook-server:
 	go run webhook.go; \
 	# запускает сервер, ожидающий запросов на отдельный порт, реагирующий на веб-хуки
 
+sudo-webhook-server-fork-run:
+	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
+	./fork.pl -pf=webhook-server.pid --single "make sudo-webhook-server-run" >> webhook-server.log  2>&1 ;\
+	# от рута: запуск сервера webhook через форк
+
+sudo-webhook-server-fork-kill:
+	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
+	./fork.pl -pf=webhook-server.pid --kila
 
 echo-ok:
 	echo "test-ok"; \
