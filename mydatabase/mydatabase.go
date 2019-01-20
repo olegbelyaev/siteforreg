@@ -3,6 +3,8 @@ package mydatabase
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"os"
 )
 
 //Db -- pull of connections
@@ -43,7 +45,12 @@ type Role struct {
 // GetDb - возвращает пул соединений с БД
 func GetDb() *sql.DB {
 	if Db == nil {
-		db1, err := sql.Open("mysql", "root:11@tcp(127.0.0.1:3306)/siteforeg")
+		pass := os.Getenv("MYSQL_SECRET")
+		if len(pass) == 0 {
+			panic("MYSQL_SECRET is EMPTY! (set MYSQL_SECRET env var and run me again)")
+		}
+
+		db1, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(127.0.0.1:3306)/siteforeg", pass))
 		if err != nil {
 			panic("pool error:" + err.Error())
 		}

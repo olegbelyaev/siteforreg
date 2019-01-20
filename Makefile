@@ -1,9 +1,10 @@
 SHELL := /bin/bash
 
 mysql-run:
+	[[ ! -f "mysql_secret.txt" ]] && echo "mysql_secret.txt not found! Createit and try again." && exit; \
 	docker  run --name site-forreg-mysql --hostname site-forreg-mysql -p 3306:3306 \
 	-v `pwd`:/docker-entrypoint-initdb.d \
-	-it -e MYSQL_ROOT_PASSWORD=11 -d \
+	-it -e MYSQL_ROOT_PASSWORD=`cat mysql_secret.txt` -d \
 	mysql --character-set-server=utf8mb4 \
 	--collation-server=utf8mb4_unicode_ci ;\
 	# от юзера: запуск mysql
