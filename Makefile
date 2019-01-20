@@ -2,7 +2,8 @@ SHELL := /bin/bash
 
 mariadb-run:
 	[[ ! -f "mariadb_secret.txt" ]] && echo "mariadb_secret.txt not found! Createit and try again." && exit; \
-	[[ ! -d `pwd`/database/mariadb ]] && echo "`pwd`/database/mariadb not exists! Create it and try again." && exit; \
+	[[ ! -d `pwd`/database/mariadb ]] && echo "NEW `pwd`/database/mariadb will be created!"; \
+	mkdir -p `pwd`/database/mariadb || echo "Cant create  `pwd`/database/mariadb! Create it and try again."; \
 	docker  run --name site-forreg-mariadb --hostname site-forreg-mariadb -p 3306:3306 \
 	-v `pwd`/database/mariadb/init:/docker-entrypoint-initdb.d \
 	-v `pwd`/database/mariadb:/var/lib/mysql \
@@ -24,22 +25,23 @@ mariadb-stop:
 
 
 mariadb-exec-shell:
-	docker exec -it site-forreg-mariadb mariadb -p siteforeg --default-character-set=utf8 ;\
+	docker exec -it site-forreg-mariadb mysql -p siteforeg --default-character-set=utf8 ;\
 	# от юзера: подключение к mariadb для выполнения команд
 
 
 mariadb-dump:
 	mkdir -p backup; \
-	docker exec site-forreg-mariadb sh -c 'exec mariadbdump --all-databases -uroot -p"$$mariadb_ROOT_PASSWORD"' | gzip > ./backup/all-db.sql.gz
+	docker exec site-forreg-mariadb sh -c 'exec mysqldump --all-databases -uroot -p"$$MYSQL_ROOT_PASSWORD"' | gzip > ./backup/all-db.sql.gz
 
 
 mariadb-restore:
-	zcat ./backup/all-db.sql.gz | docker exec -i site-forreg-mariadb sh -c 'mariadb -uroot -p"$$mariadb_ROOT_PASSWORD"'
+	zcat ./backup/all-db.sql.gz | docker exec -i site-forreg-mariadb sh -c 'mysql -uroot -p"$$MYSQL_ROOT_PASSWORD"'
 
 
 arango-run:
-	[[ ! -d `pwd`/database/arangodb ]] && echo "`pwd`/database/arangodb not exists! Create it and try again." && exit; \
 	[[ ! -f "arangodb_secret.txt" ]] && echo "arangodb_secret.txt not found! Createit and try again." && exit; \
+	[[ ! -d `pwd`/database/arangodb ]] && echo " New `pwd`/database/arangodb will be created!"; \
+	mkdir -p `pwd`/database/arangodb || echo "Cant create `pwd`/database/arangodb"; \
 	docker run -e ARANGO_ROOT_PASSWORD=`cat arangodb_secret.txt` -d \
 	-v `pwd`/database/arangodb:/var/lib/arangodb3 \
 	-v `pwd`/database/arangodb/dump:/dump \
