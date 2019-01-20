@@ -52,7 +52,17 @@ arango-stop:
 
 arango-dump:
 	docker exec -it site-forreg-arango arangodump --overwrite; \
-	echo "see `pwd`/arangodb_data/dump"
+	echo "see `pwd`/arangodb_data/dump/"
+
+
+arango-export:
+	docker exec -it site-forreg-arango arangoexport --overwrite; \
+	echo "see `pwd`/arangodb_data/export/"
+
+
+arango-export:
+	docker exec -it site-forreg-arango arangoimport --overwrite; \
+	echo "see `pwd`/arangodb_data/import/"
 
 
 sudo-siteforreg-fork-run:
