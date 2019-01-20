@@ -38,7 +38,7 @@ arango-run:
 	[[ ! -d `pwd`/arangodb_data ]] && echo "`pwd`/arangodb_data not exists! Create it and try again." && exit; \
 	[[ ! -f "arangodb_secret.txt" ]] && echo "arangodb_secret.txt not found! Createit and try again." && exit; \
 	docker run -e ARANGO_ROOT_PASSWORD=`cat arangodb_secret.txt` -d -v `pwd`/arangodb_data:/var/lib/arangodb3 	\
-	--name site-forreg-arango --hostname site-forreg-arango -p 8529:8529 arangodb
+	--name site-forreg-arango --hostname site-forreg-arango -p 8529:8529 -v ARANGO_STORAGE_ENGINE=rocksdb arangodb
 
 
 arango-start:
