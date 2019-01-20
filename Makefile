@@ -37,7 +37,8 @@ mysql-restore:
 arango-run:
 	[[ ! -d `pwd`/arangodb_data ]] && echo "`pwd`/arangodb_data not exists! Create it and try again." && exit; \
 	[[ ! -f "arangodb_secret.txt" ]] && echo "arangodb_secret.txt not found! Createit and try again." && exit; \
-	docker run -e ARANGO_ROOT_PASSWORD=`cat arangodb_secret.txt` -d -v `pwd`/arangodb_data:/var/lib/arangodb3 	\
+	docker run -e ARANGO_ROOT_PASSWORD=`cat arangodb_secret.txt` -d -v `pwd`/arangodb_data:/var/lib/arangodb3 \
+	-v `pwd`/arangodb_data/dump:/dump -v `pwd`/arangodb_data/import:/import -v `pwd`/arangodb_data/export:/export \
 	--name site-forreg-arango --hostname site-forreg-arango -p 8529:8529 -v ARANGO_STORAGE_ENGINE=rocksdb arangodb
 
 
@@ -47,6 +48,11 @@ arango-start:
 
 arango-stop:
 	docker stop site-forreg-arango
+
+
+arango-dump:
+	docker exec -it site-forreg-arango arangodump --overwrite; \
+	echo "see `pwd`/arangodb_data/dump"
 
 
 sudo-siteforreg-fork-run:
