@@ -27,9 +27,9 @@
     export EMAIL_SECRET;
     
     
-    if [ -r mysql_secret.txt ]; then
-		MYSQL_SECRET=`cat mysql_secret.txt`;
+    if [ -r mariadb_secret.txt ]; then
+		MYSQL_SECRET=`cat mariadb_secret.txt`;
 	else
-		echo "WARNING: file mysql_secret.txt NOT FOUND";
+		echo "WARNING: file mariadb_secret.txt NOT FOUND";
 	fi;
     export MYSQL_SECRET;

@@ -1,45 +1,50 @@
 SHELL := /bin/bash
 
-mysql-run:
-	[[ ! -f "mysql_secret.txt" ]] && echo "mysql_secret.txt not found! Createit and try again." && exit; \
-	docker  run --name site-forreg-mysql --hostname site-forreg-mysql -p 3306:3306 \
-	-v `pwd`:/docker-entrypoint-initdb.d \
-	-it -e MYSQL_ROOT_PASSWORD=`cat mysql_secret.txt` -d \
-	mysql --character-set-server=utf8mb4 \
+mariadb-run:
+	[[ ! -f "mariadb_secret.txt" ]] && echo "mariadb_secret.txt not found! Createit and try again." && exit; \
+	[[ ! -d `pwd`/database/mariadb ]] && echo "`pwd`/database/mariadb not exists! Create it and try again." && exit; \
+	docker  run --name site-forreg-mariadb --hostname site-forreg-mariadb -p 3306:3306 \
+	-v `pwd`/database/mariadb/init:/docker-entrypoint-initdb.d \
+	-v `pwd`/database/mariadb:/var/lib/mysql \
+	-it -e MYSQL_ROOT_PASSWORD=`cat mariadb_secret.txt` -d \
+	mariadb --character-set-server=utf8mb4 \
 	--collation-server=utf8mb4_unicode_ci ;\
-	# от юзера: запуск mysql
+	# от юзера: запуск mariadb
 
 
-mysql-start:
-	docker start site-forreg-mysql \
+mariadb-start:
+	docker start site-forreg-mariadb \
 	# запуск остановленного контейнера
 
 
-mysql-stop:
-	make mysql-dump; \
-	docker stop site-forreg-mysql ;\
-	# от юзера остановка mysql
+mariadb-stop:
+	make mariadb-dump; \
+	docker stop site-forreg-mariadb ;\
+	# от юзера остановка mariadb
 
 
-mysql-exec-shell:
-	docker exec -it site-forreg-mysql mysql -p siteforeg --default-character-set=utf8 ;\
-	# от юзера: подключение к mysql для выполнения команд
+mariadb-exec-shell:
+	docker exec -it site-forreg-mariadb mariadb -p siteforeg --default-character-set=utf8 ;\
+	# от юзера: подключение к mariadb для выполнения команд
 
 
-mysql-dump:
+mariadb-dump:
 	mkdir -p backup; \
-	docker exec site-forreg-mysql sh -c 'exec mysqldump --all-databases -uroot -p"$$MYSQL_ROOT_PASSWORD"' | gzip > ./backup/all-db.sql.gz
+	docker exec site-forreg-mariadb sh -c 'exec mariadbdump --all-databases -uroot -p"$$mariadb_ROOT_PASSWORD"' | gzip > ./backup/all-db.sql.gz
 
 
-mysql-restore:
-	zcat ./backup/all-db.sql.gz | docker exec -i site-forreg-mysql sh -c 'mysql -uroot -p"$$MYSQL_ROOT_PASSWORD"'
+mariadb-restore:
+	zcat ./backup/all-db.sql.gz | docker exec -i site-forreg-mariadb sh -c 'mariadb -uroot -p"$$mariadb_ROOT_PASSWORD"'
 
 
 arango-run:
-	[[ ! -d `pwd`/arangodb_data ]] && echo "`pwd`/arangodb_data not exists! Create it and try again." && exit; \
+	[[ ! -d `pwd`/database/arangodb ]] && echo "`pwd`/database/arangodb not exists! Create it and try again." && exit; \
 	[[ ! -f "arangodb_secret.txt" ]] && echo "arangodb_secret.txt not found! Createit and try again." && exit; \
-	docker run -e ARANGO_ROOT_PASSWORD=`cat arangodb_secret.txt` -d -v `pwd`/arangodb_data:/var/lib/arangodb3 \
-	-v `pwd`/arangodb_data/dump:/dump -v `pwd`/arangodb_data/import:/import -v `pwd`/arangodb_data/export:/export \
+	docker run -e ARANGO_ROOT_PASSWORD=`cat arangodb_secret.txt` -d \
+	-v `pwd`/database/arangodb:/var/lib/arangodb3 \
+	-v `pwd`/database/arangodb/dump:/dump \
+	-v `pwd`/database/arangodb/import:/import \
+	-v `pwd`/database/arangodb/export:/export \
 	--name site-forreg-arango --hostname site-forreg-arango -p 8529:8529 -v ARANGO_STORAGE_ENGINE=rocksdb arangodb
 
 
@@ -61,7 +66,7 @@ arango-export:
 	echo "see `pwd`/arangodb_data/export/"
 
 
-arango-export:
+arango-import:
 	docker exec -it site-forreg-arango arangoimport --overwrite; \
 	echo "see `pwd`/arangodb_data/import/"
 
@@ -86,7 +91,7 @@ git-pull:
 sudo-siteforreg-fork-release:
 	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
 	make sudo-siteforreg-fork-kill && make git-pull && make sudo-siteforreg-fork-run ;\
-	# от рута: остановка сервера через форк, от юзера стягивание из гита обновлений и от рута запуск через форк (не трогает mysql)
+	# от рута: остановка сервера через форк, от юзера стягивание из гита обновлений и от рута запуск через форк (не трогает mariadb)
 
 
 sudo-siteforreg-run:
@@ -135,4 +140,5 @@ sudo-webhook-server-fork-kill:
 echo-ok:
 	echo "test-ok"; \
 	тестовый рецепт
+
 
