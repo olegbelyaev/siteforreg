@@ -9,4 +9,3 @@ databackup/*
 arangodb_secret.txt
 arangodb_data/*
 backup/*
-backup/all-db.sql.gz
