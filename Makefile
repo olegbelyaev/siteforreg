@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-docker-run-mysql:
+mysql-run:
 	docker  run --name site-forreg-mysql --hostname site-forreg-mysql -p 3306:3306 \
 	-v `pwd`:/docker-entrypoint-initdb.d \
 	-it -e MYSQL_ROOT_PASSWORD=11 -d \
@@ -9,30 +9,44 @@ docker-run-mysql:
 	# от юзера: запуск mysql
 
 
-docker-start-mysql:
+mysql-start:
 	docker start site-forreg-mysql \
 	# запуск остановленного контейнера
 
 
-docker-stop-mysql:
-	make docker-mysql-dump; \
+mysql-stop:
+	make mysql-dump; \
 	docker stop site-forreg-mysql ;\
 	# от юзера остановка mysql
 
 
-docker-exec-mysql:
+mysql-exec-shell:
 	docker exec -it site-forreg-mysql mysql -p siteforeg --default-character-set=utf8 ;\
 	# от юзера: подключение к mysql для выполнения команд
 
 
-docker-mysql-dump:
+mysql-dump:
 	mkdir -p backup; \
 	docker exec site-forreg-mysql sh -c 'exec mysqldump --all-databases -uroot -p"$$MYSQL_ROOT_PASSWORD"' | gzip > ./backup/all-db.sql.gz
 
 
-docker-mysql-restore:
+mysql-restore:
 	zcat ./backup/all-db.sql.gz | docker exec -i site-forreg-mysql sh -c 'mysql -uroot -p"$$MYSQL_ROOT_PASSWORD"'
 
+
+arango-run:
+	[[ ! -d `pwd`/arangodb_data ]] && echo "`pwd`/arangodb_data not exists! Create it and try again." && exit; \
+	[[ ! -f "arangodb_secret.txt" ]] && echo "arangodb_secret.txt not found! Createit and try again." && exit; \
+	docker run -e ARANGO_ROOT_PASSWORD=`cat arangodb_secret.txt` -d -v `pwd`/arangodb_data:/var/lib/arangodb3 	\
+	--name site-forreg-arango --hostname site-forreg-arango -p 8529:8529 arangodb
+
+
+arango-start:
+	docker start site-forreg-arango
+
+
+arango-stop:
+	docker stop site-forreg-arango
 
 
 sudo-siteforreg-fork-run:

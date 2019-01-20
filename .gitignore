@@ -6,3 +6,6 @@ webhook_secret.txt
 *.pid
 *.PID
 databackup/*
+arangodb_secret.txt
+arangodb_data/*
+backup/*
