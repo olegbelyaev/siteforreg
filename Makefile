@@ -61,7 +61,7 @@ arango-export:
 	echo "see `pwd`/arangodb_data/export/"
 
 
-arango-export:
+arango-import:
 	docker exec -it site-forreg-arango arangoimport --overwrite; \
 	echo "see `pwd`/arangodb_data/import/"
 
