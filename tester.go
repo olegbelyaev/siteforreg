@@ -278,6 +278,7 @@ func main() {
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/*")
 	//router.LoagdHTMLFiles("templates/template1.html", "templates/template2.html")
+	// router.Static
 
 	router.Use(func(c *gin.Context) {
 		c.Set("html_title", "Siteforrreg")
