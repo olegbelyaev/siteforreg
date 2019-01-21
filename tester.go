@@ -198,6 +198,7 @@ func endreg(c *gin.Context) {
 
 // при переходе на главную страницу сайта
 func showMainPage(c *gin.Context) {
+	c.Set("LoggedUser", GetLoggedUserFromSession(c))
 	c.HTML(http.StatusOK, "main.html", c.Keys)
 }
 

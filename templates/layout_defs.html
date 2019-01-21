@@ -4,71 +4,79 @@
 <html>
 
 <head>
-  <!-- Required meta tags -->
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-  <!-- Bootstrap CSS -->
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
-    crossorigin="anonymous">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
+        crossorigin="anonymous">
 
-  <title>{{ .html_title }}</title>
+    <title>{{ .html_title }}</title>
 </head>
 
 {{ end }}
 <!-- конец нужного -->
 
 
+<!-- admin menu dropdown - часть меню, которая отображается или скрыта в зависимости от .LoggedUser.IsLogged -->
+{{ define "_admin_menu_dropdown" }}
+ {{ if eq .LoggedUser.Role.Lvl 4 }}
+
+ <li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true"
+        aria-expanded="false">
+        Admin
+    </a>
+    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+        <a class="dropdown-item" href="/locations/">Площадки</a>
+        <a class="dropdown-item" href="/users/">Пользователи</a>
+        <a class="dropdown-item" href="/add_locorg/">Организаторы на площадках</a>
+    </div>
+ </li>
+ {{ end }}
+{{ end }}
+
+
 <!-- шаблон меню главной страницы -->
 {{ define "_navbar_main" }}
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark col-12">
-  <a class="navbar-brand" href="#">Navbar</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
+<nav class="navbar navbar-expand-lg navbar-light col-12" style="background-color: #e3f2fd;">
+    <a class="navbar-brand" href="/">vorona-letela.ru</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
 
-  <div class="collapse navbar-collapse" id="navbarSupportedContent">
-    <ul class="navbar-nav mr-auto">
-      <li class="nav-item active">
-        <a class="nav-link" href="/">Home<span class="sr-only">(current)</span></a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/locations/">Locations</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/users/">Users</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/add_locorg">AddLocOrg</a>
-      </li>
-
-
-    </ul>
-
-    {{ if .LoggedUser.IsLogged }}
-    <a href="/logout" class="btn btn-outline-light my-2 my-sm-0" role="button">Logout</a>
-    {{ else }}
-    <a href="/login" class="btn btn-outline-light my-2 my-sm-0" role="button">Log In</a>
-    <a href="/registration/start" class="btn btn-outline-light my-2 my-sm-0" role="button">Sign In</a>
-    {{ end }}
-
-  </div>
+    
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+        {{ template "_admin_menu_dropdown" . }}
+        
+        {{ if .LoggedUser.IsLogged }}
+        <a href="/logout" class="btn btn-outline-dark my-2 my-sm-0" role="button">Logout</a>
+        {{ else }}
+        <a href="/login" class="btn btn-outline-dark my-2 my-sm-0" role="button">Log In</a>
+        <a href="/registration/start" class="btn btn-outline-dark my-2 my-sm-0" role="button">Sign In</a>
+        {{ end }}
+    
+        </ul>
+    </div>
 </nav>
 </nav>
+
 
 <!-- отображение предупреждающих сообщений (об ошибках пользователя)-->
 {{ if .warning_msg}}
 <div class="alert alert-warning" role="alert">
-  {{ .warning_msg }}
+    {{ .warning_msg }}
 </div>
 {{ end }}
 
 <!-- отображение сообщений информационного характера-->
 {{ if .info_msg}}
 <div class="alert alert-warning" role="alert">
-  {{ .info_msg }}
+    {{ .info_msg }}
 </div>
 {{ end }}
 
@@ -76,16 +84,17 @@
 <!-- конец меню главной -->
 
 
+
 <!-- нужно: -->
 {{ define "_bootstrap" }}
 <!-- Optional JavaScript -->
 <!-- jQuery first, then Popper.js, then Bootstrap JS -->
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-  crossorigin="anonymous"></script>
+    crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
-  crossorigin="anonymous"></script>
+    crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
-  crossorigin="anonymous"></script>
+    crossorigin="anonymous"></script>
 {{ end }}
 <!-- конец нужного -->
 </body>
