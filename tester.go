@@ -311,7 +311,11 @@ func main() {
 		locations.POST("/insert", inslocation)
 	}
 
-	router.GET("/users", showUsers)
+	users := router.Group("/users")
+	{
+		users.Use(GotoLoginIfNotLogged)
+		users.GET("/", showUsers)
+	}
 
 	router.GET("/locorgs", showLocorgs)
 	router.Any("/add_locorg", addLocOrg)
@@ -323,4 +327,14 @@ func main() {
 
 	router.Run(fmt.Sprintf(":%s", port))
 	sql.Drivers()
+}
+
+// GotoLoginIfNotLogged - подключается к роутеру через Use() до выполнения кода, требующего аутентификации
+// "middleware" в терминах gin
+func GotoLoginIfNotLogged(c *gin.Context) {
+	c.Set("LoggedUser", GetLoggedUserFromSession(c))
+	u, _ := c.Get("LoggedUser")
+	if !u.(LoggedUser).IsLogged {
+		c.Redirect(http.StatusTemporaryRedirect, "/login")
+	}
 }
