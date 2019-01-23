@@ -20,6 +20,16 @@ import (
 	"github.com/olegbelyaev/siteforreg/mydatabase"
 )
 
+// GotoLoginIfNotLogged - подключается к роутеру через Use() до выполнения кода, требующего аутентификации
+// "middleware" в терминах gin
+func GotoLoginIfNotLogged(c *gin.Context) {
+	c.Set("LoggedUser", GetLoggedUserFromSession(c))
+	u, _ := c.Get("LoggedUser")
+	if !u.(LoggedUser).IsLogged {
+		c.Redirect(http.StatusTemporaryRedirect, "/login")
+	}
+}
+
 // SaveEmailToSession  - сохраняет email пользователя в сессию
 func SaveEmailToSession(c *gin.Context, email string) {
 	sess, _ := mysession.GetSession(c)
@@ -44,6 +54,19 @@ type LoggedUser struct {
 	User        mydatabase.User
 	IsRoleFound bool
 	Role        mydatabase.Role
+}
+
+// GetLoggedUserRoleLvl - возвращает уровень роли пользователя
+// возвращает 0 если роьне найдена или пользователь не залогинен
+// todo: сейчас не проверить, т.к. нету пользователей с ролями меньшими 4
+func GetLoggedUserRoleLvl(lu LoggedUser) int {
+	if !lu.IsLogged {
+		return 0
+	}
+	if !lu.IsRoleFound {
+		return 0
+	}
+	return lu.Role.Lvl
 }
 
 // GetLoggedUserFromSession - получает из сессии email юзера.
@@ -322,14 +345,4 @@ func main() {
 
 	router.Run(fmt.Sprintf(":%s", port))
 	sql.Drivers()
-}
-
-// GotoLoginIfNotLogged - подключается к роутеру через Use() до выполнения кода, требующего аутентификации
-// "middleware" в терминах gin
-func GotoLoginIfNotLogged(c *gin.Context) {
-	c.Set("LoggedUser", GetLoggedUserFromSession(c))
-	u, _ := c.Get("LoggedUser")
-	if !u.(LoggedUser).IsLogged {
-		c.Redirect(http.StatusTemporaryRedirect, "/login")
-	}
 }
