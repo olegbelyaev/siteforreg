@@ -17,7 +17,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/sessions"
 	"github.com/olegbelyaev/siteforreg/mydatabase"
 )
 
@@ -110,21 +109,14 @@ func showLocorgs(c *gin.Context) {
 
 func inslocation(c *gin.Context) {
 	var l mydatabase.Location
+	// получение данных из формы создания новой площадки:
 	if err := c.ShouldBind(&l); err != nil {
 		c.Set("warning_msg", err.Error())
 		c.HTML(http.StatusOK, "templateAddLocation.html", c.Keys)
 	}
 
-	var store = sessions.NewCookieStore([]byte("supersecret"))
-	session, err := store.Get(c.Request, "session-name")
-	if err != nil {
-		panic(err.Error())
-	}
-	session.Values["lastlocname"] = l.Name
-	session.Save(c.Request, c.Writer)
-
 	mydatabase.AddLocation(l)
-	c.HTML(http.StatusOK, "templ_locations.html", c.Keys)
+	c.Redirect(http.StatusTemporaryRedirect, "/locations/")
 }
 
 // вызывает форму регистрации на сайте
@@ -302,11 +294,14 @@ func main() {
 
 	router.POST("/registration/end", endreg)
 
-	// router.GET("/confirmemail/:secret", confirmemail)
-
 	locations := router.Group("/locations")
 	{
-		locations.GET("/", showLocations)
+		// логина не требует:
+		locations.Any("/", showLocations)
+
+		// ниже этого будет требовать залогиниться:
+		locations.Use(GotoLoginIfNotLogged)
+
 		locations.GET("/new", newlocation)
 		locations.POST("/insert", inslocation)
 	}
