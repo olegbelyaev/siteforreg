@@ -77,6 +77,14 @@ func inslocation(c *gin.Context) {
 	c.Redirect(http.StatusTemporaryRedirect, "/locations/")
 }
 
+func dellocation(c *gin.Context) {
+	var l mydatabase.Location
+	if err := c.ShouldBind(&l); err != nil {
+		c.Set("warning_msg", "ошибка данных из формы")
+		c.HTML(http.StatusOK, "locations.html", c.Keys)
+	}
+}
+
 // вызывает форму регистрации на сайте
 func startreg(c *gin.Context) {
 	c.HTML(http.StatusOK, "registration.html", c.Keys)
@@ -262,6 +270,8 @@ func main() {
 
 		locations.GET("/new", newlocation)
 		locations.POST("/insert", inslocation)
+		// td: как защититься от запросов не с этого сайта?
+		locations.Any("/delete", dellocation)
 	}
 
 	users := router.Group("/users")
