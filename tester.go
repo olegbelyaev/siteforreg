@@ -267,6 +267,7 @@ func main() {
 	users := router.Group("/users")
 	{
 		users.Use(app.GotoLoginIfNotLogged)
+		users.Use(app.GotoAccessDeniedIfNotAdmin)
 		users.GET("/", showUsers)
 	}
 

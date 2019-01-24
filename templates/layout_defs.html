@@ -40,6 +40,10 @@
 
 <!-- шаблон меню главной страницы -->
 {{ define "_navbar_main" }}
+ <!-- . = c.Keys
+ .LoggedUser 
+ .warning_msg
+ .info_msg -->
 
 <nav class="navbar navbar-expand-lg navbar-light col-12" style="background-color: #e3f2fd;">
     <a class="navbar-brand" href="/">vorona-letela.ru</a>
@@ -65,7 +69,7 @@
 </nav>
 </nav>
 
-
+{{ . }}
 <!-- отображение предупреждающих сообщений (об ошибках пользователя)-->
 {{ if .warning_msg}}
 <div class="alert alert-warning" role="alert">

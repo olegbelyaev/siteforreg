@@ -18,6 +18,21 @@ func GotoLoginIfNotLogged(c *gin.Context) {
 	}
 }
 
+// GotoAccessDeniedIfNotAdmin - проверяет уровень юзера >=4
+// иначе редиректит на ошибку
+func GotoAccessDeniedIfNotAdmin(c *gin.Context) {
+	u := GetLoggedUserFromSession(c)
+	// только в одном случае все ОК:
+	if u.IsLogged && u.IsRoleFound && u.Role.Lvl >= 4 {
+		return
+	}
+	// иначе редирект
+	// todo: установка s.Set с редиректом не работает,
+	// можно будет использовать флеш-сообщения через сесии
+	c.Redirect(http.StatusTemporaryRedirect, "/")
+
+}
+
 // SaveEmailToSession  - сохраняет email пользователя в сессию
 func SaveEmailToSession(c *gin.Context, email string) {
 	sess, _ := mysession.GetSession(c)
