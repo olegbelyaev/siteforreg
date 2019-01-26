@@ -1,12 +1,39 @@
 package app
 
 import (
+	"math/rand"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/olegbelyaev/siteforreg/mydatabase"
 	"github.com/olegbelyaev/siteforreg/mysession"
 )
+
+// GenerateSecret - generates random password
+func GenerateSecret() string {
+	rand.Seed(time.Now().UnixNano())
+	digits := "0123456789"
+	all := "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+		"abcdefghijklmnopqrstuvwxyz" +
+		digits
+	length := 10
+	buf := make([]byte, length)
+	buf[0] = digits[rand.Intn(len(digits))]
+	for i := 1; i < length; i++ {
+		buf[i] = all[rand.Intn(len(all))]
+	}
+	rand.Shuffle(len(buf), func(i, j int) {
+		buf[i], buf[j] = buf[j], buf[i]
+	})
+	return string(buf)
+}
+
+// ShowMainPage - показ главной страницы сайта
+func ShowMainPage(c *gin.Context) {
+	c.Set("LoggedUser", GetLoggedUserFromSession(c))
+	c.HTML(http.StatusOK, "main.html", c.Keys)
+}
 
 // GotoLoginIfNotLogged - подключается к роутеру через Use() до выполнения кода, требующего аутентификации
 // "middleware" в терминах gin
@@ -29,8 +56,12 @@ func GotoAccessDeniedIfNotAdmin(c *gin.Context) {
 	// иначе редирект
 	// todo: установка s.Set с редиректом не работает,
 	// можно будет использовать флеш-сообщения через сесии
-	c.Redirect(http.StatusTemporaryRedirect, "/")
-
+	// c.Redirect(http.StatusTemporaryRedirect, "/")
+	// остановить цепочку
+	c.Abort()
+	// перенаправить на главную:
+	c.Set("warning_msg", "Недостаточно прав")
+	ShowMainPage(c)
 }
 
 // SaveEmailToSession  - сохраняет email пользователя в сессию

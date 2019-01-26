@@ -21,7 +21,7 @@
                 <td>{{ .Name }}</td>
                 <td>{{ .Address }}</td>
                 <td><a href="/locorgs?location_id={{ .ID }}" role="button" class="btn btn-secondary">Организаторы</a></td>
-
+                <td><a href="/locations/delete/{{ .ID }}" role="button" class="btn btn-danger">Удалить</a></td>
             </tr>
             {{ end }}
 

@@ -4,12 +4,10 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"math/rand"
 	"net/http"
 	"net/mail"
 	"os"
 	"strconv"
-	"time"
 
 	"github.com/olegbelyaev/siteforreg/app"
 	"github.com/olegbelyaev/siteforreg/myemail"
@@ -78,11 +76,26 @@ func inslocation(c *gin.Context) {
 }
 
 func dellocation(c *gin.Context) {
-	var l mydatabase.Location
-	if err := c.ShouldBind(&l); err != nil {
-		c.Set("warning_msg", "ошибка данных из формы")
-		c.HTML(http.StatusOK, "locations.html", c.Keys)
+	locationIDStr := c.Param("ID")
+	if len(locationIDStr) == 0 {
+		c.Set("warning_msg", "ошибка данных")
+		c.Abort()
+		showLocations(c)
+		return
 	}
+	locationID, err := strconv.Atoi(locationIDStr)
+	if err != nil {
+		c.Set("warning_msg", "ошибка парсинга данных ")
+		c.Abort()
+		showLocations(c)
+		return
+	}
+
+	err = mydatabase.DeleteLocation(locationID)
+	if err != nil {
+		c.Set("warning_msg", err.Error())
+	}
+	showLocations(c)
 }
 
 // вызывает форму регистрации на сайте
@@ -90,29 +103,10 @@ func startreg(c *gin.Context) {
 	c.HTML(http.StatusOK, "registration.html", c.Keys)
 }
 
-// GenerateSecret - generates random password
-func GenerateSecret() string {
-	rand.Seed(time.Now().UnixNano())
-	digits := "0123456789"
-	all := "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
-		"abcdefghijklmnopqrstuvwxyz" +
-		digits
-	length := 10
-	buf := make([]byte, length)
-	buf[0] = digits[rand.Intn(len(digits))]
-	for i := 1; i < length; i++ {
-		buf[i] = all[rand.Intn(len(all))]
-	}
-	rand.Shuffle(len(buf), func(i, j int) {
-		buf[i], buf[j] = buf[j], buf[i]
-	})
-	return string(buf)
-}
-
 // когда пользователь заполнил форму регистрации нового юзера на сайт
 func endreg(c *gin.Context) {
 	email := c.PostForm("email")
-	secret := GenerateSecret()
+	secret := app.GenerateSecret()
 	user := mydatabase.User{
 		Email:    email,
 		Password: secret,
@@ -154,12 +148,6 @@ func endreg(c *gin.Context) {
 	}
 }
 
-// при переходе на главную страницу сайта
-func showMainPage(c *gin.Context) {
-	c.Set("LoggedUser", app.GetLoggedUserFromSession(c))
-	c.HTML(http.StatusOK, "main.html", c.Keys)
-}
-
 // пользователь заполнил и отправил форму входа юзера на сайт
 func loginEnd(c *gin.Context) {
 	email := c.PostForm("email")
@@ -177,7 +165,7 @@ func loginEnd(c *gin.Context) {
 			// юзер найден и емаил подтвержден:
 			app.SaveEmailToSession(c, email)
 			// c.HTML(http.StatusOK, "main.html", gin.H{})
-			showMainPage(c)
+			app.ShowMainPage(c)
 		}
 	}
 }
@@ -186,7 +174,7 @@ func loginEnd(c *gin.Context) {
 func logout(c *gin.Context) {
 	// для разлогина сохраним емаил, по которому пользователь не найдется
 	app.SaveEmailToSession(c, "")
-	showMainPage(c)
+	app.ShowMainPage(c)
 }
 
 func addLocOrg(c *gin.Context) {
@@ -244,7 +232,7 @@ func main() {
 		c.Set("LoggedUser", app.GetLoggedUserFromSession(c))
 	})
 
-	router.GET("/", showMainPage)
+	router.GET("/", app.ShowMainPage)
 
 	router.GET("/form1", usernameForm)
 	router.POST("/form1", saveun)
@@ -271,7 +259,7 @@ func main() {
 		locations.GET("/new", newlocation)
 		locations.POST("/insert", inslocation)
 		// td: как защититься от запросов не с этого сайта?
-		locations.Any("/delete", dellocation)
+		locations.Any("/delete/:ID", dellocation)
 	}
 
 	users := router.Group("/users")
