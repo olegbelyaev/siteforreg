@@ -89,9 +89,12 @@ func main() {
 
 	// ======================= организаторы на площадках ===================
 
-	router.GET("/locorgs", app.ShowLocorgs)
-
-	router.Any("/add_locorg", app.AddLocOrg)
+	locorgs := router.Group("/locorgs")
+	{
+		locorgs.GET("/", app.ShowLocorgs)
+		locorgs.Any("/add_locorg", app.AddLocOrg)
+		locorgs.Any("/delete", app.DeleteLocorg)
+	}
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> запуск! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	port := os.Getenv("PORT")

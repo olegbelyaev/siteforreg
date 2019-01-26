@@ -11,3 +11,9 @@ func DeleteLocation(ID int) error {
 	_, err := GetDb().Query(`DELETE FROM locations WHERE id=?`, ID)
 	return err
 }
+
+// DeleteLocorgs - удалить одну или несколько записей locorg
+func DeleteLocorgs(locationID int, userID int) error {
+	_, err := GetDb().Query(`DELETE FROM locorg WHERE location_id=? AND organizer_id=?`, locationID, userID)
+	return err
+}

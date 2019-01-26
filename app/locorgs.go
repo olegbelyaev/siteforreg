@@ -24,7 +24,7 @@ func ShowLocorgs(c *gin.Context) {
 	c.HTML(http.StatusOK, "show_locorgs.html", c.Keys)
 }
 
-// AddLocOrg - организаторы на площадках
+// AddLocOrg - добавить организатора на площадку
 func AddLocOrg(c *gin.Context) {
 	locID := c.PostForm("location_id")
 	if len(locID) > 0 {
@@ -56,5 +56,31 @@ func AddLocOrg(c *gin.Context) {
 		panic("Can't parse as int:" + userID)
 	}
 	mydatabase.AddLocOrg(locIDint, userIDint)
+	ShowLocorgs(c)
 
+}
+
+// DeleteLocorg - удалить организатора на площадке
+func DeleteLocorg(c *gin.Context) {
+	locationIDStr := c.Query("location_id")
+	locationID, err := strconv.Atoi(locationIDStr)
+	if err != nil {
+		c.Set("warning_msg", err.Error())
+		ShowLocorgs(c)
+		return
+	}
+	userIDStr := c.Query("user_id")
+	userID, err := strconv.Atoi(userIDStr)
+	if err != nil {
+		c.Set("warning_msg", err.Error())
+		ShowLocorgs(c)
+		return
+	}
+	err = mydatabase.DeleteLocorgs(locationID, userID)
+	if err != nil {
+		c.Set("warning_msg", err.Error())
+		ShowLocorgs(c)
+		return
+	}
+	ShowLocorgs(c)
 }
