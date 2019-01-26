@@ -92,6 +92,10 @@ func main() {
 	locorgs := router.Group("/locorgs")
 	{
 		locorgs.GET("/", app.ShowLocorgs)
+
+		locorgs.Use(app.GotoLoginIfNotLogged)
+		locorgs.Use(app.GotoAccessDeniedIfNotAdmin)
+
 		locorgs.Any("/add_locorg", app.AddLocOrg)
 		locorgs.Any("/delete", app.DeleteLocorg)
 	}
