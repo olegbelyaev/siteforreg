@@ -255,6 +255,8 @@ func main() {
 
 		// ниже этого будет требовать залогиниться:
 		locations.Use(app.GotoLoginIfNotLogged)
+		// требование быть админом:
+		locations.Use(app.GotoAccessDeniedIfNotAdmin)
 
 		locations.GET("/new", newlocation)
 		locations.POST("/insert", inslocation)
