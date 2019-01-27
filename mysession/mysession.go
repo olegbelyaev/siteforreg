@@ -46,3 +46,35 @@ func GetStringValue(c *gin.Context, key string) (string, bool) {
 	}
 	return email.(string), ok
 }
+
+// AddWarningFlash - добавить warning-флеш-сообщение пользователю
+func AddWarningFlash(c *gin.Context, msg string) {
+	sess, _ := GetSession(c)
+	sess.AddFlash("WARNING:" + msg)
+	sess.Save(c.Request, c.Writer)
+}
+
+// AddInfoFlash - добавить info-флеш-сообщение пользователю
+func AddInfoFlash(c *gin.Context, msg string) {
+	sess, _ := GetSession(c)
+	sess.AddFlash("INFO:" + msg)
+	sess.Save(c.Request, c.Writer)
+}
+
+// GetFlashes - возвращает список предупреждающих и иформационных флеш-сообщений (и удаляет их из сессии)
+func GetFlashes(c *gin.Context) ([]string, []string) {
+	sess, _ := GetSession(c)
+	allFlashes := sess.Flashes()
+	sess.Save(c.Request, c.Writer)
+	var warningFlashes []string
+	var infoFlashes []string
+	for _, fl := range allFlashes {
+		if strings.HasPrefix(fl.(string), "WARNING") {
+			warningFlashes = append(warningFlashes, fl.(string))
+			continue
+		}
+		infoFlashes = append(infoFlashes, fl.(string))
+	}
+
+	return warningFlashes, infoFlashes
+}

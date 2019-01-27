@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/olegbelyaev/siteforreg/mydatabase"
+	"github.com/olegbelyaev/siteforreg/mysession"
 )
 
 // ShowLocations - список площадок
@@ -55,7 +56,7 @@ func DeleteLocation(c *gin.Context) {
 	if len(foundLocorgs) > 0 {
 		// если на ней есть организаторы
 		// сообщение пользователю и редирект на список организаторов этой площадки:
-		AddInfoFlash(c, "Чтобы удалить площадку, удалите всех организаторов с данной лощадки")
+		mysession.AddInfoFlash(c, "Чтобы удалить площадку, удалите всех организаторов с данной лощадки")
 		c.Redirect(http.StatusTemporaryRedirect, "/locorgs/?location_id="+locationIDStr)
 		return
 	}

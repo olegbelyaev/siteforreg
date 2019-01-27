@@ -8,6 +8,7 @@ import (
 
 	"github.com/olegbelyaev/siteforreg/app"
 	"github.com/olegbelyaev/siteforreg/myemail"
+	"github.com/olegbelyaev/siteforreg/mysession"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
@@ -33,7 +34,7 @@ func main() {
 	router.Use(func(c *gin.Context) {
 		c.Set("html_title", "Siteforrreg")
 		c.Set("LoggedUser", app.GetLoggedUserFromSession(c))
-		warningFlashes, infoFlashes := app.GetFlashes(c)
+		warningFlashes, infoFlashes := mysession.GetFlashes(c)
 		c.Set("WarningFlashes", warningFlashes)
 		c.Set("InfoFlashes", infoFlashes)
 	})
