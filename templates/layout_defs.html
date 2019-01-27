@@ -31,7 +31,6 @@
     <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
         <a class="dropdown-item" href="/locations/">Площадки</a>
         <a class="dropdown-item" href="/users/">Пользователи</a>
-        <a class="dropdown-item" href="/locorgs/">Организаторы на площадках</a>
     </div>
  </li>
  {{ end }}
@@ -73,6 +72,20 @@
 {{ if .warning_msg}}
 <div class="alert alert-warning" role="alert">
     {{ .warning_msg }}
+</div>
+{{ end }}
+
+<!-- wrning-flash-сообщения -->
+{{ range .WarningFlashes }}
+<div class="alert alert-warning" role="alert">
+    {{ . }}
+</div>
+{{ end }}
+
+<!-- info-flash-сообщения -->
+{{ range .InfoFlashes }}
+<div class="alert alert-info" role="alert">
+    {{ . }}
 </div>
 {{ end }}
 

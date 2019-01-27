@@ -50,6 +50,17 @@ func DeleteLocation(c *gin.Context) {
 		return
 	}
 
+	// поиск организаторов на этой площадке
+	foundLocorgs := mydatabase.FindLocOrgsByField("location_id", locationID)
+	if len(foundLocorgs) > 0 {
+		// если на ней есть организаторы
+		// сообщение пользователю и редирект на список организаторов этой площадки:
+		AddInfoFlash(c, "Чтобы удалить площадку, удалите всех организаторов с данной лощадки")
+		c.Redirect(http.StatusTemporaryRedirect, "/locorgs/?location_id="+locationIDStr)
+		return
+	}
+
+	// удалить площадку
 	err = mydatabase.DeleteLocation(locationID)
 	if err != nil {
 		c.Set("warning_msg", err.Error())

@@ -2,6 +2,7 @@ package mydatabase
 
 import (
 	"database/sql"
+	"log"
 )
 
 // FindUserByEmail finding user by email
@@ -112,25 +113,25 @@ func FindLocOrgsByField(field string, value interface{}) (locorgs []LocOrg) {
 	var err error
 	if len(field) > 0 {
 		// если имя поля непустое
-		sql := `SELECT l.*,u.* 
+		sqlQuery := `SELECT l.*,u.* 
 		FROM locorg lo
 		LEFT JOIN users u ON lo.organizer_id=u.id
 		LEFT JOIN locations l on lo.location_id=l.id
 		WHERE ` + field + "=?"
 
-		// panic(fmt.Sprintf(sql, value))
-		rows, err = GetDb().Query(sql, value)
+		rows, err = GetDb().Query(sqlQuery, value)
+		// panic(fmt.Sprintf(sqlQuery, value))
 		if err != nil {
-			panic("error in sql select: " + err.Error())
+			panic("error in sqlQuery select: " + err.Error())
 		}
 
 	} else {
 		// если имя поля пустое
 		rows, err = GetDb().Query(`SELECT l.*,u.* FROM locorg lo
-		LEFT JOIN users u ON lo.organizer_id=u.id
-		LEFT JOIN locations l on lo.location_id=l.id`)
+			LEFT JOIN users u ON lo.organizer_id=u.id
+			LEFT JOIN locations l on lo.location_id=l.id`)
 		if err != nil {
-			panic("error in sql select: " + err.Error())
+			panic("error in sqlQuery select: " + err.Error())
 		}
 	}
 
@@ -139,7 +140,11 @@ func FindLocOrgsByField(field string, value interface{}) (locorgs []LocOrg) {
 		if err := rows.Scan(&lo.Location.ID, &lo.Location.Name, &lo.Location.Address,
 			&lo.Organizer.ID, &lo.Organizer.Password, &lo.Organizer.Email,
 			&lo.Organizer.Fio, &lo.Organizer.RoleID); err != nil {
-			panic("Scan error:" + err.Error())
+			// если запро с с left join то могут быть
+			// висячие locorgs указывающие на никакую прощадку
+			log.Printf("Skipped bad incostistent locorg record")
+			continue
+			// panic("Scan error:" + err.Error())
 		}
 		locorgs = append(locorgs, lo)
 	}

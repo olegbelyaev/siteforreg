@@ -33,6 +33,9 @@ func main() {
 	router.Use(func(c *gin.Context) {
 		c.Set("html_title", "Siteforrreg")
 		c.Set("LoggedUser", app.GetLoggedUserFromSession(c))
+		warningFlashes, infoFlashes := app.GetFlashes(c)
+		c.Set("WarningFlashes", warningFlashes)
+		c.Set("InfoFlashes", infoFlashes)
 	})
 
 	// ======================== главная / регистрация / логин / выход =====================

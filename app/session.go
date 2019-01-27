@@ -1,6 +1,8 @@
 package app
 
 import (
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/olegbelyaev/siteforreg/mydatabase"
 	"github.com/olegbelyaev/siteforreg/mysession"
@@ -39,4 +41,36 @@ func GetLoggedUserFromSession(c *gin.Context) LoggedUser {
 		lu.Role, lu.IsRoleFound = mydatabase.FindRoleByID(lu.User.RoleID)
 	}
 	return lu
+}
+
+// AddWarningFlash - добавить warning-флеш-сообщение пользователю
+func AddWarningFlash(c *gin.Context, msg string) {
+	sess, _ := mysession.GetSession(c)
+	sess.AddFlash("WARNING:" + msg)
+	sess.Save(c.Request, c.Writer)
+}
+
+// AddInfoFlash - добавить info-флеш-сообщение пользователю
+func AddInfoFlash(c *gin.Context, msg string) {
+	sess, _ := mysession.GetSession(c)
+	sess.AddFlash("INFO:" + msg)
+	sess.Save(c.Request, c.Writer)
+}
+
+// GetFlashes - возвращает список предупреждающих и иформационных флеш-сообщений (и удаляет их из сессии)
+func GetFlashes(c *gin.Context) ([]string, []string) {
+	sess, _ := mysession.GetSession(c)
+	allFlashes := sess.Flashes()
+	sess.Save(c.Request, c.Writer)
+	var warningFlashes []string
+	var infoFlashes []string
+	for _, fl := range allFlashes {
+		if strings.HasPrefix(fl.(string), "WARNING") {
+			warningFlashes = append(warningFlashes, fl.(string))
+			continue
+		}
+		infoFlashes = append(infoFlashes, fl.(string))
+	}
+
+	return warningFlashes, infoFlashes
 }
