@@ -51,7 +51,7 @@ func main() {
 
 	router.GET("/logout", func(c *gin.Context) {
 		// для разлогина сохраним емаил, по которому пользователь не найдется
-		app.SaveEmailToSession(c, "")
+		mysession.SaveEmail(c, "")
 		app.ShowMainPage(c)
 	})
 

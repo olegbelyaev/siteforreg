@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/olegbelyaev/siteforreg/mydatabase"
 	"github.com/olegbelyaev/siteforreg/myemail"
+	"github.com/olegbelyaev/siteforreg/mysession"
 )
 
 // GenerateSecret - generates random password
@@ -138,7 +139,7 @@ func LoginEnd(c *gin.Context) {
 			c.HTML(http.StatusOK, "login.html", c.Keys)
 		} else {
 			// юзер найден и емаил подтвержден:
-			SaveEmailToSession(c, email)
+			mysession.SaveEmail(c, email)
 			// c.HTML(http.StatusOK, "main.html", gin.H{})
 			ShowMainPage(c)
 		}

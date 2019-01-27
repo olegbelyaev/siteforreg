@@ -6,13 +6,6 @@ import (
 	"github.com/olegbelyaev/siteforreg/mysession"
 )
 
-// SaveEmailToSession  - сохраняет email пользователя в сессию
-func SaveEmailToSession(c *gin.Context, email string) {
-	sess, _ := mysession.GetSession(c)
-	sess.Values["email"] = email
-	sess.Save(c.Request, c.Writer)
-}
-
 // GetUserFromSession - достает объект User из сессии
 func GetUserFromSession(c *gin.Context) (mydatabase.User, bool) {
 	var user mydatabase.User

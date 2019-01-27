@@ -37,6 +37,13 @@ func GetSession(c *gin.Context) (*sessions.Session, error) {
 	return sess, err
 }
 
+// SaveEmail  - сохраняет email пользователя в сессию
+func SaveEmail(c *gin.Context, email string) {
+	sess, _ := GetSession(c)
+	sess.Values["email"] = email
+	sess.Save(c.Request, c.Writer)
+}
+
 // GetStringValue - возвращает ранее сохраненное в сессии строковое значение по ключу key
 func GetStringValue(c *gin.Context, key string) (string, bool) {
 	sess, _ := GetSession(c)
