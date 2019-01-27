@@ -1,0 +1,35 @@
+{{ template "_start_html" . }}
+
+<body>
+
+    {{ template "_navbar_main" . }}
+
+    <h1>Edit location</h1>
+
+    <form action="/locations/save" method="post" class="needs-validation" novalidate>
+    <input type="hidden" name="ID" value="{{ .Location.ID }}">
+        <div class="form-row">
+            <div class="col-md-4 mb-3">
+                <label for="validationCustom01">Location name</label>
+                <input type="text" name="locate_name" class="form-control" id="validationCustom01" placeholder="First name"
+                    value="{{ .Location.Name }}"    required>
+                <div class="invalid-feedback">
+                    Please provide a valid zip.
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label for="validationCustom02">Location address</label>
+                <input type="text" name="locate_address" class="form-control" id="validationCustom02" placeholder="Last name"
+                    value="{{ .Location.Address }}" required>
+                <div class="invalid-feedback">
+                    Please provide a valid zip.
+                </div>
+            </div>
+
+            <button class="btn btn-primary" type="submit">Submit form</button>
+    </form>
+
+    {{ template "_bootstrap" . }}
+</body>
+{{template "_end_html" . }}

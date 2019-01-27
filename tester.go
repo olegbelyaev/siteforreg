@@ -58,24 +58,25 @@ func main() {
 	router.POST("/registration/end", app.RegistrationEnd)
 
 	// ================== площадки =========================================
+	// td: как защититься от запросов не с этого сайта?
 
 	locations := router.Group("/locations")
 	{
 		locations.Any("/", app.ShowLocations)
 
-		// ниже этого будет требовать залогиниться:
 		locations.Use(app.GotoLoginIfNotLogged)
-		// требование быть админом:
 		locations.Use(app.GotoAccessDeniedIfNotAdmin)
 
 		locations.GET("/new", func(c *gin.Context) {
-			c.HTML(http.StatusOK, "tmp_valid_locations.html", c.Keys)
+			c.HTML(http.StatusOK, "new_location_form.html", c.Keys)
 		})
 
-		locations.POST("/insert", app.AddLocation)
+		locations.POST("/insert", app.InsertLocation)
 
-		// td: как защититься от запросов не с этого сайта?
 		locations.Any("/delete/:ID", app.DeleteLocation)
+
+		locations.Any("/edit/:ID", app.EditLocation)
+		locations.POST("/save", app.SaveLocation)
 	}
 
 	// ========================== пользователи ================================

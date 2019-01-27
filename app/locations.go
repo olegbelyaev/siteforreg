@@ -18,16 +18,19 @@ func ShowLocations(c *gin.Context) {
 	c.HTML(http.StatusOK, "locations.html", c.Keys)
 }
 
-// AddLocation - добавление новой площадки
-func AddLocation(c *gin.Context) {
+// InsertLocation - вставка новой площадки
+func InsertLocation(c *gin.Context) {
 	var l mydatabase.Location
 	// получение данных из формы создания новой площадки:
 	if err := c.ShouldBind(&l); err != nil {
 		c.Set("warning_msg", err.Error())
-		c.HTML(http.StatusOK, "templateAddLocation.html", c.Keys)
+		ShowLocations(c)
 	}
 	mydatabase.AddLocation(l)
-	c.Redirect(http.StatusTemporaryRedirect, "/locations/")
+
+	// что лучше
+	// c.Redirect(http.StatusTemporaryRedirect, "/locations/")
+	ShowLocations(c)
 }
 
 // DeleteLocation - удаление площадки
@@ -52,4 +55,56 @@ func DeleteLocation(c *gin.Context) {
 		c.Set("warning_msg", err.Error())
 	}
 	ShowLocations(c)
+}
+
+// EditLocation - форма редактирования и сохранение площадки
+func EditLocation(c *gin.Context) {
+	// какую площадку редактируем/сохраняем:
+	locIDStr := c.Param("ID")
+	locID, err := strconv.Atoi(locIDStr)
+	if err != nil {
+		c.Set("warning_msg", err.Error())
+		// c.Abort()
+		ShowLocations(c)
+		return
+	}
+
+	// найдем ее в бд:
+	locations := mydatabase.FindLocationsByField("id", locID)
+	if len(locations) == 0 {
+		// c.Abort()
+		c.Set("warning_msg", "Not found")
+		ShowLocations(c)
+		return
+	}
+
+	// первая запись из найденных
+	dbLocation := locations[0]
+
+	// показываем форму редактирования, передаем туда данные из бд
+	c.Set("Location", dbLocation)
+	c.HTML(http.StatusOK, "edit_location.html", c.Keys)
+	return
+}
+
+// SaveLocation - сохранение площадки
+func SaveLocation(c *gin.Context) {
+
+	// сохранение формы
+	var formLocation mydatabase.Location
+	if err := c.ShouldBind(&formLocation); err != nil {
+		c.Set("warning_msg", err.Error())
+		// c.Abort()
+		ShowLocations(c)
+		return
+	}
+
+	// ошибок нет, сохраняем данные в бд
+	_, err := mydatabase.UpdateLocation(formLocation)
+	if err != nil {
+		c.Set("warning_msg", err.Error())
+		// c.Abort()
+	}
+	ShowLocations(c)
+
 }
