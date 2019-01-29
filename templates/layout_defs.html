@@ -29,13 +29,28 @@
         Admin
     </a>
     <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-        <a class="dropdown-item" href="/locations/">Площадки</a>
-        <a class="dropdown-item" href="/users/">Пользователи</a>
+        <a class="dropdown-item" href="/administrate/locations/">Площадки</a>
+        <a class="dropdown-item" href="/administrate/users/">Пользователи</a>
     </div>
  </li>
  {{ end }}
 {{ end }}
 
+
+<!-- organizer menu dropdown - часть меню организатора -->
+{{ define "_organizer_menu_dropdown" }}
+
+ <li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true"
+        aria-expanded="false">
+        Организатор
+    </a>
+    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+        <a class="dropdown-item" href="/manage/mylocorgs/">Где я организатор</a>
+        <!-- <a class="dropdown-item" href="/путь/">лалала</a> -->
+    </div>
+ </li>
+{{ end }}
 
 <!-- шаблон меню главной страницы -->
 {{ define "_navbar_main" }}
@@ -55,6 +70,8 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
         {{ template "_admin_menu_dropdown" . }}
+
+        {{ template "_organizer_menu_dropdown" }}
         
         {{ if .LoggedUser.IsLogged }}
         <a href="/logout" class="btn btn-outline-dark my-2 my-sm-0" role="button">Logout</a>
@@ -101,7 +118,6 @@
 
 
 
-<!-- нужно: -->
 {{ define "_bootstrap" }}
 <!-- Optional JavaScript -->
 <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -112,12 +128,9 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
     crossorigin="anonymous"></script>
 {{ end }}
-<!-- конец нужного -->
 </body>
 
-<!-- нужно: -->
 {{ define "_end_html" }}
 
 </html>
 {{ end }}
-<!-- конец нужного -->

@@ -20,24 +20,27 @@
         <tbody>
             {{ range $i, $locorg := .locorgs }}
             <tr>
-                <td><a href="/locorgs?user_id={{ .Organizer.ID }}" role="button" class="btn btn-secondary">Площадки</a></td>
+                <td><a href="/administrate/locorgs?user_id={{ .Organizer.ID }}" role="button" class="btn btn-secondary">Площадки</a></td>
                 <td scope="row">{{ .Organizer.ID }}</td>
                 <td>{{ .Organizer.Fio }}</td>
                 <td>{{ .Organizer.Email }}</td>
                 <td>{{ .Organizer.RoleID }}</td>
                 <td>{{ .Location.Name }}</td>
+                <td><a href="/manage_lections?location_id={{ .Location.ID }}" role="button" class="btn btn-secondary">Лекции</a></td>
+
                 <td>{{ .Location.Address }}</td>
-                <td><a href="/locorgs?location_id={{ .Location.ID }}" role="button" class="btn btn-secondary">Организаторы</a></td>
-                <td><a href="/locorgs/delete?location_id={{ .Location.ID }};user_id={{ .Organizer.ID }}" role="button" class="btn btn-danger">Удалить</a>
+                <td><a href="/administrate/locorgs?location_id={{ .Location.ID }}" role="button" class="btn btn-secondary">Организаторы</a></td>
+                <td><a href="/administrate/locorgs/delete?location_id={{ .Location.ID }};user_id={{ .Organizer.ID }}" role="button" class="btn btn-danger">Удалить</a>
 
             </tr>
             {{ end }}
 
         </tbody>
     </table>
-    <a href="/locorgs/add_locorg" role="button" class="btn btn-light">Добавить</a>
+    <a href="/administrate/locorgs/add_locorg" role="button" class="btn btn-light">Добавить организатора на площадку</a>
 
-    <!-- <a href="/user/new" type="button" class="btn btn-light">Создать</a> -->
+
+    <!-- <a href="/administrate/user/new" type="button" class="btn btn-light">Создать</a> -->
 
     {{ template "_bootstrap" . }}
 </body>

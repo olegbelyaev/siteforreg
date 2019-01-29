@@ -20,16 +20,16 @@
                 <td scope="row">{{ .ID }}</td>
                 <td>{{ .Name }}</td>
                 <td>{{ .Address }}</td>
-                <td><a href="/locorgs?location_id={{ .ID }}" role="button" class="btn btn-secondary">Организаторы</a></td>
-                <td><a href="/locations/edit/{{ .ID }}" role="button" class="btn btn-primary">Редактировать</a></td>
-                <td><a href="/locations/delete/{{ .ID }}" role="button" class="btn btn-danger">Удалить</a></td>
+                <td><a href="/administrate/locorgs?location_id={{ .ID }}" role="button" class="btn btn-secondary">Организаторы</a></td>
+                <td><a href="/administrate/locations/edit/{{ .ID }}" role="button" class="btn btn-primary">Редактировать</a></td>
+                <td><a href="/administrate/locations/delete/{{ .ID }}" role="button" class="btn btn-danger">Удалить</a></td>
             </tr>
             {{ end }}
 
         </tbody>
     </table>
 
-    <a href="/locations/new" type="button" class="btn btn-light">Создать</a>
+    <a href="/administrate/locations/new" type="button" class="btn btn-light">Создать</a>
 
     {{ template "_bootstrap" . }}
 </body>

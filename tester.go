@@ -61,48 +61,59 @@ func main() {
 
 	router.POST("/registration/end", app.RegistrationEnd)
 
-	// ================== площадки =========================================
 	// td: как защититься от запросов не с этого сайта?
-
-	locations := router.Group("/locations")
+	// зона администратора:
+	administrate := router.Group("/administrate")
 	{
-		locations.Any("/", app.ShowLocations)
+		administrate.Use(app.GotoLoginIfNotLogged)
+		administrate.Use(app.GotoAccessDeniedIfNotAdmin)
 
-		locations.Use(app.GotoLoginIfNotLogged)
-		locations.Use(app.GotoAccessDeniedIfNotAdmin)
+		// ================== площадки =========================================
+		locations := administrate.Group("/locations")
+		{
+			locations.Any("/", app.ShowLocations)
 
-		locations.GET("/new", func(c *gin.Context) {
-			c.HTML(http.StatusOK, "new_location_form.html", c.Keys)
-		})
+			locations.GET("/new", func(c *gin.Context) {
+				c.HTML(http.StatusOK, "new_location_form.html", c.Keys)
+			})
 
-		locations.POST("/insert", app.InsertLocation)
+			locations.POST("/insert", app.InsertLocation)
 
-		locations.Any("/delete/:ID", app.DeleteLocation)
+			locations.Any("/delete/:ID", app.DeleteLocation)
 
-		locations.Any("/edit/:ID", app.EditLocation)
-		locations.POST("/save", app.SaveLocation)
+			locations.Any("/edit/:ID", app.EditLocation)
+			locations.POST("/save", app.SaveLocation)
+		}
+
+		// ========================== пользователи ================================
+		users := administrate.Group("/users")
+		{
+			users.GET("/", app.ShowUsers)
+		}
+
+		// ======================= организаторы на площадках ===================
+		locorgs := administrate.Group("/locorgs")
+		{
+			locorgs.GET("/", app.ShowLocorgs)
+
+			locorgs.Use(app.GotoLoginIfNotLogged)
+			locorgs.Use(app.GotoAccessDeniedIfNotAdmin)
+
+			locorgs.Any("/add_locorg", app.AddLocOrg)
+			locorgs.Any("/delete", app.DeleteLocorg)
+		}
 	}
 
-	// ========================== пользователи ================================
-	users := router.Group("/users")
+	manage := router.Group("/manage")
 	{
-		users.Use(app.GotoLoginIfNotLogged)
-		users.Use(app.GotoAccessDeniedIfNotAdmin)
+		manage.Use(app.GotoLoginIfNotLogged)
 
-		users.GET("/", app.ShowUsers)
-	}
+		// ======================== площадки юзера-организатора ====================
+		mylocorgs := manage.Group("/mylocorgs")
+		{
+			mylocorgs.Any("/", app.ShowMyLocOrgs)
 
-	// ======================= организаторы на площадках ===================
-
-	locorgs := router.Group("/locorgs")
-	{
-		locorgs.GET("/", app.ShowLocorgs)
-
-		locorgs.Use(app.GotoLoginIfNotLogged)
-		locorgs.Use(app.GotoAccessDeniedIfNotAdmin)
-
-		locorgs.Any("/add_locorg", app.AddLocOrg)
-		locorgs.Any("/delete", app.DeleteLocorg)
+		}
 	}
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> запуск! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<

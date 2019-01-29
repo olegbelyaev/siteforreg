@@ -76,6 +76,13 @@ func ShowLocorgs(c *gin.Context) {
 	c.HTML(http.StatusOK, "show_locorgs.html", c.Keys)
 }
 
+// ShowMyLocOrgs - список площадок текущего пользователя-организатора
+func ShowMyLocOrgs(c *gin.Context) {
+	curUser := GetLoggedUserFromSession(c)
+	c.Set("locorgs", mydatabase.FindLocOrgsByField("organizer_id", curUser.User.ID))
+	c.HTML(http.StatusOK, "show_locorgs.html", c.Keys)
+}
+
 // AddLocOrg - добавить организатора на площадку
 func AddLocOrg(c *gin.Context) {
 	locID := c.PostForm("location_id")
@@ -158,7 +165,7 @@ func InsertLocation(c *gin.Context) {
 	mydatabase.AddLocation(l)
 
 	// что лучше
-	// c.Redirect(http.StatusTemporaryRedirect, "/locations/")
+	// c.Redirect(http.StatusTemporaryRedirect, "/administrate/locations/")
 	ShowLocations(c)
 }
 
@@ -185,7 +192,7 @@ func DeleteLocation(c *gin.Context) {
 		// если на ней есть организаторы
 		// сообщение пользователю и редирект на список организаторов этой площадки:
 		mysession.AddInfoFlash(c, "Чтобы удалить площадку, удалите всех организаторов с данной лощадки")
-		c.Redirect(http.StatusTemporaryRedirect, "/locorgs/?location_id="+locationIDStr)
+		c.Redirect(http.StatusTemporaryRedirect, "/administrate/locorgs/?location_id="+locationIDStr)
 		return
 	}
 
