@@ -26,7 +26,7 @@
                 <td>{{ .Organizer.Email }}</td>
                 <td>{{ .Organizer.RoleID }}</td>
                 <td>{{ .Location.Name }}</td>
-                <td><a href="/manage_lections?location_id={{ .Location.ID }}" role="button" class="btn btn-secondary">Лекции</a></td>
+                <td><a href="/manage/lectures/?location_id={{ .Location.ID }}" role="button" class="btn btn-secondary">Лекции</a></td>
 
                 <td>{{ .Location.Address }}</td>
                 <td><a href="/administrate/locorgs?location_id={{ .Location.ID }}" role="button" class="btn btn-secondary">Организаторы</a></td>

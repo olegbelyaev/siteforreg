@@ -84,8 +84,9 @@ func ShowMyLocOrgs(c *gin.Context) {
 }
 
 // ShowMyLecures - shows lections manage page
-func ShowMyLecures(c *gin.Context) {
+func ShowMyLectures(c *gin.Context) {
 	locationIDStr := c.Query("location_id")
+	c.Set("LocationID", locationIDStr)
 	c.Set("lectures", mydatabase.FindLecturesByField("location_id", locationIDStr))
 	c.HTML(http.StatusOK, "manage_lectures.html", c.Keys)
 }

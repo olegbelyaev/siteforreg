@@ -117,7 +117,17 @@ func main() {
 
 		mylectures := manage.Group("/lectures")
 		{
-			mylectures.Any("/", app.ShowMyLecures)
+			mylectures.Any("/", app.ShowMyLectures)
+			mylectures.Any("/new", func(c *gin.Context) {
+				LocationID := c.Query("location_id")
+				if len("location_id") == 0 {
+					app.SetWarningMsg(c, "location_id not defined")
+					c.Redirect(http.StatusTemporaryRedirect, "/manage/lectures/")
+					return
+				}
+				c.Set("LocationID", LocationID)
+				c.HTML(http.StatusOK, "new_lecture.html", c.Keys)
+			})
 		}
 	}
 
