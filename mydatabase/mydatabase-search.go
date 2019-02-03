@@ -3,6 +3,8 @@ package mydatabase
 import (
 	"database/sql"
 	"log"
+
+	ifErr "github.com/olegbelyaev/siteforreg/errorwrapper"
 )
 
 // FindUserByEmail finding user by email
@@ -147,6 +149,33 @@ func FindLocOrgsByField(field string, value interface{}) (locorgs []LocOrg) {
 			// panic("Scan error:" + err.Error())
 		}
 		locorgs = append(locorgs, lo)
+	}
+	return
+}
+
+// FindLecturesByField - ищет лекции по имени и значению поля. Если field=="" ищет все лекции.
+func FindLecturesByField(field string, value interface{}) (lectures []Lecture) {
+
+	var rows *sql.Rows
+	var err error
+	if len(field) > 0 {
+		// если имя поля непустое
+		rows, err = GetDb().Query("SELECT * FROM lectures WHERE "+field+"=?", value)
+		ifErr.Panic("Can't sql select (lectures): ", err)
+
+	} else {
+		// если имя поля пустое
+		rows, err = GetDb().Query("SELECT * FROM lectures")
+		ifErr.Panic("Can't sql select (all lectures): ", err)
+	}
+
+	var l Lecture
+	for rows.Next() {
+		if err := rows.Scan(&l.ID, &l.LocationID, &l.When, &l.GroupName,
+			&l.MaxSeets, &l.Name, &l.Description); err != nil {
+			panic("Scan error:" + err.Error())
+		}
+		lectures = append(lectures, l)
 	}
 	return
 }

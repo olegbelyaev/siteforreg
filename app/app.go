@@ -83,6 +83,13 @@ func ShowMyLocOrgs(c *gin.Context) {
 	c.HTML(http.StatusOK, "show_locorgs.html", c.Keys)
 }
 
+// ShowMyLecures - shows lections manage page
+func ShowMyLecures(c *gin.Context) {
+	locationIDStr := c.Query("location_id")
+	c.Set("lectures", mydatabase.FindLecturesByField("location_id", locationIDStr))
+	c.HTML(http.StatusOK, "manage_lectures.html", c.Keys)
+}
+
 // AddLocOrg - добавить организатора на площадку
 func AddLocOrg(c *gin.Context) {
 	locID := c.PostForm("location_id")

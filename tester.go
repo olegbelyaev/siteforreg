@@ -114,6 +114,11 @@ func main() {
 			mylocorgs.Any("/", app.ShowMyLocOrgs)
 
 		}
+
+		mylectures := manage.Group("/lectures")
+		{
+			mylectures.Any("/", app.ShowMyLecures)
+		}
 	}
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> запуск! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<

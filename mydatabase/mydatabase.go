@@ -42,6 +42,17 @@ type Role struct {
 	Lvl  int
 }
 
+// Lecture - лекция
+type Lecture struct {
+	ID          int
+	LocationID  int
+	When        string
+	GroupName   string
+	MaxSeets    int
+	Name        string
+	Description string
+}
+
 // GetDb - возвращает пул соединений с БД
 func GetDb() *sql.DB {
 	if Db == nil {
