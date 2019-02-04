@@ -91,6 +91,19 @@ func ShowMyLectures(c *gin.Context) {
 	c.HTML(http.StatusOK, "manage_lectures.html", c.Keys)
 }
 
+// InsertLecture - inserts lecture to location
+func InsertLecture(c *gin.Context) {
+	var lectureForm mydatabase.Lecture
+	if err := c.ShouldBind(&lectureForm); err != nil {
+		SetWarningMsg(c, "location_id error")
+		c.Redirect(http.StatusTemporaryRedirect, "/")
+		return
+	}
+	// td: защититься от вставки к чужой площадке
+	mydatabase.AddLecture(lectureForm)
+	c.Redirect(http.StatusTemporaryRedirect, "/manage/lectures/?location_id="+strconv.Itoa(lectureForm.LocationID))
+}
+
 // AddLocOrg - добавить организатора на площадку
 func AddLocOrg(c *gin.Context) {
 	locID := c.PostForm("location_id")

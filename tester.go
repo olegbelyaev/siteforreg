@@ -128,6 +128,7 @@ func main() {
 				c.Set("LocationID", LocationID)
 				c.HTML(http.StatusOK, "new_lecture.html", c.Keys)
 			})
+			mylectures.POST("/insert", app.InsertLecture)
 		}
 	}
 

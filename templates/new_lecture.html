@@ -4,7 +4,7 @@
 
     {{ template "_navbar_main" . }}
 
-    <form action="/manage/lections/insert" method="post" class="needs-validation" novalidate>
+    <form action="/manage/lectures/insert" method="post" class="needs-validation" novalidate>
         <div class="form-row">
             <input type="hidden" name="location_id" value="{{ .LocationID }}" >
         
@@ -18,7 +18,7 @@
 
         <div class="col-md-4 mb-3">
             <label for="validationCustom04">Группа/класс</label>
-            <input type="text" name="group" class="form-control" id="validationCustom01" placeholder="Группа" required>
+            <input type="text" name="group_name" class="form-control" id="validationCustom01" placeholder="Группа" required>
             <div class="invalid-feedback">
                 Заполните группу.
             </div>
@@ -26,7 +26,7 @@
 
         <div class="col-md-4 mb-3">
             <label for="validationCustom05">Количество мест</label>
-            <input type="text" name="group" class="form-control" id="validationCustom01" placeholder="число" required>
+            <input type="text" name="max_seets" class="form-control" id="validationCustom01" placeholder="число" required>
             <div class="invalid-feedback">
                 Заполните число мест.
             </div>

@@ -44,13 +44,13 @@ type Role struct {
 
 // Lecture - лекция
 type Lecture struct {
-	ID          int
-	LocationID  int
-	When        string
-	GroupName   string
-	MaxSeets    int
-	Name        string
-	Description string
+	ID          int    `form:"id"`
+	LocationID  int    `form:"location_id" binding:"required"`
+	When        string `form:"when" binding:"required"`
+	GroupName   string `form:"group_name" binding:"required"`
+	MaxSeets    int    `form:"max_seets" binding:"required"`
+	Name        string `form:"name" binding:"required"`
+	Description string `form:"description" binding:"required"`
 }
 
 // GetDb - возвращает пул соединений с БД

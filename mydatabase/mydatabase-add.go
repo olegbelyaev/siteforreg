@@ -1,6 +1,10 @@
 package mydatabase
 
-import "os"
+import (
+	"os"
+
+	ifErr "github.com/olegbelyaev/siteforreg/errorwrapper"
+)
 
 // No - test func
 func No() string {
@@ -53,4 +57,16 @@ func AddInitAdmin() {
 		})
 	}
 
+}
+
+// AddLecture - adds lecture to db
+func AddLecture(l Lecture) {
+	conn := GetConn()
+	defer conn.Close()
+	_, err := conn.ExecContext(Ctx,
+		"INSERT INTO lectures (location_id, `when`, group_name, max_seets, name, description) "+
+			"VALUES (?,?,?,?,?,?)",
+		l.LocationID, l.When, l.GroupName, l.MaxSeets, l.Name, l.Description)
+
+	ifErr.Panic("Can't insert new lecture", err)
 }
