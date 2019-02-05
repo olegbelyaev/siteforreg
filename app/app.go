@@ -104,6 +104,37 @@ func InsertLecture(c *gin.Context) {
 	c.Redirect(http.StatusTemporaryRedirect, "/manage/lectures/?location_id="+strconv.Itoa(lectureForm.LocationID))
 }
 
+// SaveLecture - save lecture to location
+func SaveLecture(c *gin.Context) {
+	var lectureForm mydatabase.Lecture
+	if err := c.ShouldBind(&lectureForm); err != nil {
+		SetWarningMsg(c, "location_id error")
+		c.Redirect(http.StatusTemporaryRedirect, "/")
+		return
+	}
+	// td: защититься от запроса к чужой площадке
+	mydatabase.SaveLecture(lectureForm)
+	c.Redirect(http.StatusTemporaryRedirect, "/manage/lectures/?location_id="+strconv.Itoa(lectureForm.LocationID))
+}
+
+// EditLecture - show edit lecture page
+func EditLecture(c *gin.Context) {
+	var lectureID = c.Query("lecture_id")
+	if len(lectureID) == 0 {
+		SetWarningMsg(c, "lecture_id!")
+		c.Redirect(http.StatusTemporaryRedirect, "/")
+		return
+	}
+	lectures := mydatabase.FindLecturesByField("id", lectureID)
+	if len(lectures) == 0 {
+		SetWarningMsg(c, "Not found lecture "+lectureID)
+		c.Redirect(http.StatusTemporaryRedirect, "/")
+		return
+	}
+	c.Set("Lecture", lectures[0])
+	c.HTML(http.StatusOK, "edit_lecture.html", c.Keys)
+}
+
 // AddLocOrg - добавить организатора на площадку
 func AddLocOrg(c *gin.Context) {
 	locID := c.PostForm("location_id")

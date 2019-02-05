@@ -118,6 +118,7 @@ func main() {
 		mylectures := manage.Group("/lectures")
 		{
 			mylectures.Any("/", app.ShowMyLectures)
+
 			mylectures.Any("/new", func(c *gin.Context) {
 				LocationID := c.Query("location_id")
 				if len("location_id") == 0 {
@@ -129,6 +130,9 @@ func main() {
 				c.HTML(http.StatusOK, "new_lecture.html", c.Keys)
 			})
 			mylectures.POST("/insert", app.InsertLecture)
+
+			mylectures.Any("edit", app.EditLecture)
+			mylectures.POST("/save", app.SaveLecture)
 		}
 	}
 

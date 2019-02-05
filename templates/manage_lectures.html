@@ -17,6 +17,7 @@
                 <td>{{ .MaxSeets }}</td>
                 <td>{{ .Name }}</td>
                 <td>{{ .Description }}</td>
+                <td><a href="/manage/lectures/edit?lecture_id={{ .ID }}" role="button" class="btn btn-light">Редактировать</a></td>
 
             </tr>
             {{ end }}

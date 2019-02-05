@@ -70,3 +70,15 @@ func AddLecture(l Lecture) {
 
 	ifErr.Panic("Can't insert new lecture", err)
 }
+
+// SaveLecture - saves lecture to db
+func SaveLecture(l Lecture) {
+	conn := GetConn()
+	defer conn.Close()
+	_, err := conn.ExecContext(Ctx,
+		"UPDATE lectures SET location_id=?, `when`=?, group_name=?, max_seets=?, name=?, description=? "+
+			"WHERE id=?",
+		l.LocationID, l.When, l.GroupName, l.MaxSeets, l.Name, l.Description, l.ID)
+
+	ifErr.Panic("Can't save lecture", err)
+}
