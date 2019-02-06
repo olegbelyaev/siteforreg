@@ -6,51 +6,60 @@
 
     <form action="/manage/lectures/save" method="post" class="needs-validation" novalidate>
         <div class="form-row">
-            <input type="hidden" name="location_id" value="{{ .Lecture.LocationID }}" >
-            <input type="hidden" name="id" value="{{ .Lecture.ID }}" >
-        
-        <div class="col-md-4 mb-3">
-            <label for="validationCustom03">Когда</label>
-            <input type="text" name="when" value="{{ .Lecture.When }}" class="form-control" id="validationCustom01" placeholder="Когда" required>
-            <div class="invalid-feedback">
-                Заполните дату/время лекции.
+            <input type="hidden" name="location_id" value="{{ .Lecture.LocationID }}">
+            <input type="hidden" name="id" value="{{ .Lecture.ID }}">
+
+            <div class="col-md-4 mb-3">
+                <label for="validationCustom03">Когда</label>
+                <input type="text" name="when" value="{{ .Lecture.When }}" class="form-control" id="validationCustom01"
+                    placeholder="Когда" required>
+                <div class="invalid-feedback">
+                    Заполните дату/время лекции.
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label for="validationCustom04">Группа/класс</label>
+                <input type="text" name="group_name" value="{{ .Lecture.GroupName }}" class="form-control" id="validationCustom01"
+                    placeholder="Группа" required>
+                <div class="invalid-feedback">
+                    Заполните группу.
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label for="validationCustom05">Количество мест</label>
+                <input type="text" name="max_seets" value="{{ .Lecture.MaxSeets }}" class="form-control" id="validationCustom01"
+                    placeholder="число" required>
+                <div class="invalid-feedback">
+                    Заполните число мест.
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label for="validationCustom01">Название</label>
+                <input type="text" name="name" value="{{ .Lecture.Name }}" class="form-control" id="validationCustom01"
+                    placeholder="Название" required>
+                <div class="invalid-feedback">
+                    Заполните название лекции.
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label for="validationCustom02">Location address</label>
+                <input type="text" name="description" value="{{ .Lecture.Description }}" class="form-control" id="validationCustom02"
+                    placeholder="Описание лекции" required>
+                <div class="invalid-feedback">
+                    Заполните описание лекции.
+                </div>
+            </div>
+
+        </div>
+        <div class="form-row">
+            <div class="col-md-4 mb-3">
+                <button class="btn btn-primary" type="submit">Сохранить</button>
             </div>
         </div>
-
-        <div class="col-md-4 mb-3">
-            <label for="validationCustom04">Группа/класс</label>
-            <input type="text" name="group_name" value="{{ .Lecture.GroupName }}" class="form-control" id="validationCustom01" placeholder="Группа" required>
-            <div class="invalid-feedback">
-                Заполните группу.
-            </div>
-        </div>
-
-        <div class="col-md-4 mb-3">
-            <label for="validationCustom05">Количество мест</label>
-            <input type="text" name="max_seets" value="{{ .Lecture.MaxSeets }}" class="form-control" id="validationCustom01" placeholder="число" required>
-            <div class="invalid-feedback">
-                Заполните число мест.
-            </div>
-        </div>
-
-        <div class="col-md-4 mb-3">
-            <label for="validationCustom01">Название</label>
-            <input type="text" name="name" value="{{ .Lecture.Name }}" class="form-control" id="validationCustom01" placeholder="Название" required>
-            <div class="invalid-feedback">
-                Заполните название лекции.
-            </div>
-        </div>
-
-        <div class="col-md-4 mb-3">
-            <label for="validationCustom02">Location address</label>
-            <input type="text" name="description" value="{{ .Lecture.Description }}" class="form-control" id="validationCustom02" placeholder="Описание лекции"
-                required>
-            <div class="invalid-feedback">
-                Заполните описание лекции.
-            </div>
-        </div>
-
-        <button class="btn btn-primary" type="submit">Сохранить</button>
     </form>
 
     {{ template "_bootstrap" . }}

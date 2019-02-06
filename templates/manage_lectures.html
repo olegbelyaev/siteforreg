@@ -18,7 +18,7 @@
                 <td>{{ .Name }}</td>
                 <td>{{ .Description }}</td>
                 <td><a href="/manage/lectures/edit?lecture_id={{ .ID }}" role="button" class="btn btn-light">Редактировать</a></td>
-
+                <td><a href="/manage/lectures/delete?lecture_id={{ .ID }};location_id={{ .LocationID }}" role="button" class="btn btn-danger">Удалить</a></td>
             </tr>
             {{ end }}
 

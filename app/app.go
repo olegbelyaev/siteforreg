@@ -117,6 +117,19 @@ func SaveLecture(c *gin.Context) {
 	c.Redirect(http.StatusTemporaryRedirect, "/manage/lectures/?location_id="+strconv.Itoa(lectureForm.LocationID))
 }
 
+// DeleteLecture - deletes lecture
+func DeleteLecture(c *gin.Context) {
+	locationID := c.Query("location_id")
+	lectureID := c.Query("lecture_id")
+	if len(lectureID) == 0 {
+		SetWarningMsg(c, "lecture_id!")
+		c.Redirect(http.StatusTemporaryRedirect, "/manage/lectures/?location_id="+locationID)
+	}
+	// todo: если на лекцию кто-то зарегистрирован, то что делать? рассылать уведомления?
+	mydatabase.DeleteLecture(lectureID)
+	c.Redirect(http.StatusTemporaryRedirect, "/manage/lectures/?location_id="+locationID)
+}
+
 // EditLecture - show edit lecture page
 func EditLecture(c *gin.Context) {
 	var lectureID = c.Query("lecture_id")

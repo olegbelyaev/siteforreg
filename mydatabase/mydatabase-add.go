@@ -82,3 +82,10 @@ func SaveLecture(l Lecture) {
 
 	ifErr.Panic("Can't save lecture", err)
 }
+
+// DeleteLecture - deletes lecture from db
+func DeleteLecture(lectureID interface{}) {
+	_, err := GetConn().ExecContext(Ctx,
+		"DELETE FROM lectures WHERE id=?", lectureID)
+	ifErr.Panic("Can't delete lecture ", err)
+}
