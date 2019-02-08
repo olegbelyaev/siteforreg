@@ -24,7 +24,7 @@ func main() {
 	myemail.SetParams(
 		"", "sivsite@yandex.ru", os.Getenv("EMAIL_SECRET"),
 		"smtp.yandex.ru", "465",
-		mail.Address{Name: "sitename", Address: "sivsite@yandex.ru"},
+		mail.Address{Name: "MeetFor", Address: "sivsite@yandex.ru"},
 		true,
 	)
 
@@ -32,7 +32,7 @@ func main() {
 	router.LoadHTMLGlob("templates/*")
 
 	router.Use(func(c *gin.Context) {
-		c.Set("html_title", "Siteforrreg")
+		c.Set("html_title", "Meet for")
 		c.Set("LoggedUser", app.GetLoggedUserFromSession(c))
 		warningFlashes, infoFlashes := mysession.GetFlashes(c)
 		c.Set("WarningFlashes", warningFlashes)
@@ -41,9 +41,9 @@ func main() {
 
 	// ======================== главная / регистрация / логин / выход =====================
 
-	router.GET("/", app.ShowMainPage)
+	router.Any("/", app.ShowMainPage)
 
-	router.GET("/login", func(c *gin.Context) {
+	router.Any("/login", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "login.html", c.Keys)
 	})
 

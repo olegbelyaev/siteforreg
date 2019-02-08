@@ -2,58 +2,58 @@
 
 <body>
 
+    {{ template "_navbar_main" . }}
 
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark col-12">
-        <a class="navbar-brand" href="#">Navbar</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="/">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/locations/new">Locations</a>
-                </li>
-
-            </ul>
-
-            <a href="/login" class="btn btn-outline-light my-2 my-sm-0" role="button">Log In</a>
-            <a href="/registration/start" class="btn btn-outline-light my-2 my-sm-0" role="button">Sign In</a>
-
-        </div>
-    </nav>
-    </nav>
-    <!-- end of nav bar -->
 
     <form action="/registration/end" method="post" class="needs-validation" novalidate>
 
         <div class="col-md-4 ml-5">
 
             <div class="row">
-                <label for="validationCustom01">Email</label>
-                <input type="text" name="email" class="form-control" id="validationCustom01" placeholder="Your email"
-                    required>
-                <div class="invalid-feedback">
-                    Please provide a valid email.
+                <div class="col">
+                    <h1>Получение пароля</h1>
                 </div>
             </div>
 
             <div class="row">
-                <label for="validationCustom02">ФИО</label>
-                <input type="text" name="fio" class="form-control" id="validationCustom02" placeholder="Фамилия Имя Отчество"
-                    required>
-                <div class="invalid-feedback">
-                    ФИО - обязательное для заполнения поле.
+                <div class="col">
+                    <label for="validationCustom01">Куда отправить пароль</label>
+                    <input type="text" name="email" class="form-control" id="validationCustom01" placeholder="email"
+                        required>
+                    <div class="invalid-feedback">
+                        Please provide a valid email.
+                    </div>
                 </div>
             </div>
 
             <div class="row">
-                <button class="btn btn-primary" type="submit">Submit form</button>
+                    <div class="col">
+                        <div class="alert alert-success">Этот email Вы будете вводить в качестве логина, чтобы войти на сайт.</div>
+                    </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <label for="validationCustom02">ФИО</label>
+                    <input type="text" name="fio" class="form-control" id="validationCustom02" placeholder="Фамилия Имя Отчество"
+                        required>
+                    <div class="invalid-feedback">
+                        ФИО - обязательное для заполнения поле.
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                    <div class="col">
+                        <div class="alert alert-success">Это имя будет в списках зарегистрированных, когда вы запишетесь на какое-либо мероприятие, или на бейджике, если вы его распечатаете.</div>
+                    </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <button class="btn btn-primary" type="submit">Submit form</button>
+                </div>
             </div>
         </div>
 

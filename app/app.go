@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	ifErr "github.com/olegbelyaev/siteforreg/errorwrapper"
 	"github.com/olegbelyaev/siteforreg/mydatabase"
 	"github.com/olegbelyaev/siteforreg/myemail"
 	"github.com/olegbelyaev/siteforreg/mysession"
@@ -424,10 +425,12 @@ func RegistrationEnd(c *gin.Context) {
 		}
 
 		_, err := mydatabase.AddUser(user)
-		if err != nil {
-			log.Printf("Can't add user %v: %s", user, err.Error())
-		}
-		c.HTML(http.StatusOK, "main.html", c.Keys)
+		ifErr.Panic("Can't add user ", err)
+
+		mysession.AddInfoFlash(c, "Вам на почту отправлено письмо с паролем."+
+			" (Если письмо долго не приходит - проверьте папку для спама).")
+		c.Redirect(http.StatusTemporaryRedirect, "/login")
+
 	}
 }
 
@@ -437,18 +440,20 @@ func LoginEnd(c *gin.Context) {
 	password := c.PostForm("password")
 	user, ok := mydatabase.FindUserByEmail(email)
 	if !ok {
-		c.Set("warning_msg", "This email not exists.")
+		c.Set("warning_msg", "Пользователь с таким адресом не найден. "+
+			"Попробуйте получить пароль.")
 		c.HTML(http.StatusOK, "login.html", c.Keys)
 	} else {
 		if password != user.Password {
 			// юзер найден но пароль не совпадает:
-			c.Set("warning_msg", "Password incorret.")
+			c.Set("warning_msg", "Пароль почему-то не тот, который мы Вам высылали.")
 			c.HTML(http.StatusOK, "login.html", c.Keys)
 		} else {
 			// юзер найден и емаил подтвержден:
 			mysession.SaveEmail(c, email)
 			// c.HTML(http.StatusOK, "main.html", gin.H{})
-			ShowMainPage(c)
+			// ShowMainPage(c)
+			c.Redirect(http.StatusTemporaryRedirect, "/")
 		}
 	}
 }
