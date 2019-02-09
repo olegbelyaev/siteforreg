@@ -18,8 +18,26 @@ import (
 
 // ShowMainPage - показ главной страницы сайта
 func ShowMainPage(c *gin.Context) {
-	c.Set("LoggedUser", GetLoggedUserFromSession(c))
-	c.HTML(http.StatusOK, "main.html", c.Keys)
+	loggedUser := GetLoggedUserFromSession(c)
+	log.Printf("%v", loggedUser)
+	if loggedUser.IsLogged {
+		c.Set("LoggedUser", loggedUser)
+		if loggedUser.IsRoleFound {
+			switch loggedUser.Role.Lvl {
+			case 1:
+				// registered any user (listener):
+				c.HTML(http.StatusOK, "main_logged_lvl1.html", c.Keys)
+			case 4:
+				// admin:
+				c.HTML(http.StatusOK, "main_logged_lvl4.html", c.Keys)
+			default:
+				// все остальные роли:
+				c.HTML(http.StatusOK, "main_logged_other.html", c.Keys)
+			}
+			return
+		}
+	}
+	c.HTML(http.StatusOK, "main_nologged.html", c.Keys)
 }
 
 // SetWarningMsg - установка сообщения, которое пробросится в шаблоны ключем "warning_msg"

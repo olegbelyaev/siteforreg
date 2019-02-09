@@ -19,7 +19,7 @@ func main() {
 
 	// добавление суперадмина
 	mydatabase.AddInitAdmin()
-	mydatabase.AddInitRole()
+	mydatabase.AddInitRoles()
 
 	// конфигурация для отправки почты:
 	myemail.SetParams(

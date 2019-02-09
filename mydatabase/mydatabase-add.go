@@ -59,15 +59,25 @@ func AddInitAdmin() {
 
 }
 
+// AddInitRoles - добавляет начальную роль суперадмина
 // INSERT INTO roles (id,name,lvl) VALUES (1,"root", 4);
-// AddInitRole - добавляет начальную роль суперадмина
-func AddInitRole() {
+func AddInitRoles() {
+	// admin:
 	_, alreadyExists := FindRoleByID(1)
 	if !alreadyExists {
 		AddRole(Role{
 			ID:   1,
-			Name: "root",
+			Name: "Администратор",
 			Lvl:  4,
+		})
+	}
+	// listener:
+	_, alreadyExists = FindRoleByID(4)
+	if !alreadyExists {
+		AddRole(Role{
+			ID:   4,
+			Name: "Слушатель",
+			Lvl:  1,
 		})
 	}
 }

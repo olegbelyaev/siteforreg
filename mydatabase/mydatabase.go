@@ -57,6 +57,7 @@ type Lecture struct {
 }
 
 // GetDb - возвращает пул соединений с БД
+// возможно выпилим (используй тогда GetDBRSession)
 func GetDb() *sql.DB {
 	if Db == nil {
 		pass := os.Getenv("MYSQL_SECRET")
@@ -73,8 +74,9 @@ func GetDb() *sql.DB {
 	return Db
 }
 
-// GetConn - возвращает соединение с бд
+// GetConn - возвращает соединение с бд пакета sql
 // Помни, что нужно делать defer conn.Close()
+// Возможно, выпилим и будем юзать только GetDBRSession
 func GetConn() *sql.Conn {
 	conn, err := GetDb().Conn(Ctx)
 	ifErr.Panic("connection error", err)
@@ -85,6 +87,7 @@ func GetConn() *sql.Conn {
 var DBRConn *dbr.Connection
 
 // GetDBRConn - альтернатива getDB, использующая пакет dbr
+// см. GetDBRSession
 func GetDBRConn(log dbr.EventReceiver) *dbr.Connection {
 	if DBRConn == nil {
 		pass := os.Getenv("MYSQL_SECRET")
@@ -100,6 +103,7 @@ func GetDBRConn(log dbr.EventReceiver) *dbr.Connection {
 }
 
 // GetDBRSession - returns GetDBRConn(log).NewSession(log)
+// Предпочтительный способ для получения сессии работы с бд и работы с пакетом dbr
 func GetDBRSession(log dbr.EventReceiver) *dbr.Session {
 	return GetDBRConn(nil).NewSession(nil)
 }
