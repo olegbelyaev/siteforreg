@@ -5,6 +5,9 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+
+	"github.com/gocraft/dbr"
+	ifErr "github.com/olegbelyaev/siteforreg/errorwrapper"
 )
 
 //Db -- pull of connections
@@ -74,8 +77,29 @@ func GetDb() *sql.DB {
 // Помни, что нужно делать defer conn.Close()
 func GetConn() *sql.Conn {
 	conn, err := GetDb().Conn(Ctx)
-	if err != nil {
-		panic("connection error:" + err.Error())
-	}
+	ifErr.Panic("connection error", err)
 	return conn
+}
+
+// DBRConn - соединение с БД получаемое через GetDBR()
+var DBRConn *dbr.Connection
+
+// GetDBRConn - альтернатива getDB, использующая пакет dbr
+func GetDBRConn(log dbr.EventReceiver) *dbr.Connection {
+	if DBRConn == nil {
+		pass := os.Getenv("MYSQL_SECRET")
+		if len(pass) == 0 {
+			panic("MYSQL_SECRET is EMPTY! (set MYSQL_SECRET env var and run me again)")
+		}
+		var err error
+		DBRConn, err = dbr.Open("mysql", fmt.Sprintf("root:%s@tcp(127.0.0.1:3306)/siteforeg", pass), nil)
+		ifErr.Panic("DBR connection error", err)
+		DBRConn.SetMaxOpenConns(10)
+	}
+	return DBRConn
+}
+
+// GetDBRSession - returns GetDBRConn(log).NewSession(log)
+func GetDBRSession(log dbr.EventReceiver) *dbr.Session {
+	return GetDBRConn(nil).NewSession(nil)
 }

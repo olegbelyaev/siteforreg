@@ -12,23 +12,12 @@ func FindUserByEmail(email string) (User, bool) {
 	return FindUserByField("email", email)
 }
 
-// FindUserByField finds user by any one field
+// FindUserByField - finds user by any one field
 func FindUserByField(field string, value interface{}) (User, bool) {
-
-	rows, err := GetDb().Query("SELECT * FROM users WHERE "+field+"=?", value)
-	if err != nil {
-		panic("error in sql select: " + err.Error())
-	}
-
 	var u User
-	for rows.Next() {
-		if err := rows.Scan(&u.ID, &u.Password, &u.Email,
-			&u.Fio, &u.RoleID); err != nil {
-			panic("Scan error:" + err.Error())
-		}
-		return u, true
-	}
-	return u, false
+	_, err := GetDBRSession(nil).Select("*").From("users").Where(field+"=?", value).Load(&u)
+	ifErr.Log("Error while find user", err)
+	return u, err == nil
 }
 
 // FindRoleByID - поиск роли по ее ID
