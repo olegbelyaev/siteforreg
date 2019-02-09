@@ -2,13 +2,13 @@ create database IF NOT EXISTS siteforeg;
 use siteforeg;
 
 create table IF NOT EXISTS locations (
-    `id` int auto_increment primary key not null, 
+    `id` int(11) auto_increment primary key not null, 
     `name` varchar(255) not null default "", 
     `address` varchar(255) not null default ""
     );
 
 create table IF NOT EXISTS roles (
-    `id` int primary key not null,
+    `id` int(11) primary key not null,
     `name` varchar(100) not null default "",
     `lvl` int not null default 1
 );
@@ -36,11 +36,11 @@ CREATE TABLE IF NOT EXISTS `lectures` (
   `max_seets` int(11) NOT NULL DEFAULT 30,
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `description` varchar(1024) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`))
+  PRIMARY KEY (`id`));
 
 CREATE TABLE IF NOT EXISTS `tickets` (
 `id` int(11) NOT NULL AUTO_INCREMENT,
 `user_id` int(11) NOT NULL,
 `lecture_id` int(11) NOT NULL,
 PRIMARY KEY (`id`)
-)
+);
