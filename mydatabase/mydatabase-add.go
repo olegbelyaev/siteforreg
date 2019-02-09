@@ -59,6 +59,31 @@ func AddInitAdmin() {
 
 }
 
+// INSERT INTO roles (id,name,lvl) VALUES (1,"root", 4);
+// AddInitRole - добавляет начальную роль суперадмина
+func AddInitRole() {
+	_, alreadyExists := FindRoleByID(1)
+	if !alreadyExists {
+		AddRole(Role{
+			ID:   1,
+			Name: "root",
+			Lvl:  4,
+		})
+	}
+}
+
+// AddRole - добавляет роль в БД
+func AddRole(r Role) {
+	conn := GetConn()
+	defer conn.Close()
+	_, err := conn.ExecContext(Ctx,
+		"INSERT INTO roles (id, name, lvl) "+
+			"VALUES (?,?,?)",
+		r.ID, r.Name, r.Lvl)
+
+	ifErr.Panic("Can't insert new lecture", err)
+}
+
 // AddLecture - adds lecture to db
 func AddLecture(l Lecture) {
 	conn := GetConn()

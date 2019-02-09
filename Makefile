@@ -28,6 +28,10 @@ mariadb-exec-shell:
 	docker exec -it site-forreg-mariadb mysql -p siteforeg --default-character-set=utf8 ;\
 	# от юзера: подключение к mariadb для выполнения команд
 
+mariadb-exec-sql-input:
+	[[ ! -f "mariadb_secret.txt" ]] && echo "mariadb_secret.txt not found! Createit and try again." && exit; \
+	docker exec -i site-forreg-mariadb mysql -p`cat mariadb_secret.txt` siteforeg --default-character-set=utf8 ;\
+	# от юзера: подключение к mariadb для выполнения команд
 
 mariadb-dump:
 	mkdir -p backup; \
