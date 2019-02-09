@@ -10,7 +10,7 @@ create table IF NOT EXISTS locations (
 create table IF NOT EXISTS roles (
     `id` int(11) primary key not null,
     `name` varchar(100) not null default "",
-    `lvl` int not null default 1
+    `lvl` varchar(20) not null default "listener"
 );
 
 create table IF NOT EXISTS users (

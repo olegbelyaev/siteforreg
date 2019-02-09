@@ -68,7 +68,7 @@ func AddInitRoles() {
 		AddRole(Role{
 			ID:   1,
 			Name: "Администратор",
-			Lvl:  4,
+			Lvl:  "admin",
 		})
 	}
 	// listener:
@@ -77,7 +77,7 @@ func AddInitRoles() {
 		AddRole(Role{
 			ID:   4,
 			Name: "Слушатель",
-			Lvl:  1,
+			Lvl:  "listener",
 		})
 	}
 }

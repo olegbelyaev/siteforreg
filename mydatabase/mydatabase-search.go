@@ -20,6 +20,53 @@ func FindUserByField(field string, value interface{}) (User, bool) {
 	return u, err == nil
 }
 
+// Ticket - bind user and lecture, which hi will listen
+type Ticket struct {
+	ID        int
+	UserID    int
+	LectureID int
+}
+
+// UserLectureTicket - incasulates user, his ticket, lecture and location
+type UserLectureTicket struct {
+	User     User
+	Lecture  Lecture
+	Location Location
+	Ticket   Ticket
+}
+
+// FindUserLectionTicketsByField - find by tickets field
+func FindUserLectionTicketsByField(field string, value interface{}) (lectures []UserLectureTicket) {
+	var u User
+	var le Lecture
+	var lo Location
+	var t Ticket
+	rows, err := GetDBRSession(nil).Select("*").From("users").
+		LeftJoin("tickets", "users.id=tickets.user_id").
+		LeftJoin("lectures", "tickets.lecture_id=lectures.id").
+		LeftJoin("locations", "lectures.location_id=locations.id").
+		Where(field+"=?", value).
+		Rows()
+
+	ifErr.Panic("error while find lections", err)
+
+	for rows.Next() {
+		err := rows.Scan(&u.ID, &u.Password, &u.Email, &u.Fio, &u.RoleID,
+			&t.ID, &t.UserID, &t.LectureID,
+			&le.ID, &le.LocationID, &le.When, &le.GroupName, &le.MaxSeets, &le.Name, &le.Description,
+			&lo.ID, &lo.Name, &lo.Address)
+		ifErr.Panic("cant scan lectures", err)
+
+		lectures = append(lectures, UserLectureTicket{
+			User:     u,
+			Lecture:  le,
+			Location: lo,
+			Ticket:   t})
+
+	}
+	return lectures
+}
+
 // FindRoleByID - поиск роли по ее ID
 func FindRoleByID(id int) (Role, bool) {
 	rows, err := GetDb().Query("SELECT * FROM roles WHERE id=?", id)
@@ -167,4 +214,34 @@ func FindLecturesByField(field string, value interface{}) (lectures []Lecture) {
 		lectures = append(lectures, l)
 	}
 	return
+}
+
+type LectureLocation struct {
+	Lecture  Lecture
+	Location Location
+}
+
+// FindLecturesLocationsByField - finds lestures with locations
+func FindLecturesLocationsByField(field string, value interface{}) (lectures []LectureLocation) {
+
+	var le Lecture
+	var lo Location
+
+	sql := GetDBRSession(nil).Select("*").From("lectures").
+		LeftJoin("locations", "lectures.location_id=locations.id")
+
+	if len(field) > 0 {
+		sql = sql.Where("lecture."+field+"=?", value)
+	}
+
+	rows, err := sql.Rows()
+	ifErr.Panic("cant finf lectures + locations", err)
+
+	for rows.Next() {
+		err := rows.Scan(&le.ID, &le.LocationID, &le.When, &le.GroupName, &le.MaxSeets, &le.Name, &le.Description,
+			&lo.ID, &lo.Name, &lo.Address)
+		ifErr.Panic("scan error", err)
+		lectures = append(lectures, LectureLocation{Lecture: le, Location: lo})
+	}
+	return lectures
 }

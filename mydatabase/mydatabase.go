@@ -42,7 +42,7 @@ type LocOrg struct {
 type Role struct {
 	ID   int
 	Name string
-	Lvl  int
+	Lvl  string
 }
 
 // Lecture - лекция

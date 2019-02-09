@@ -21,18 +21,24 @@ func ShowMainPage(c *gin.Context) {
 	loggedUser := GetLoggedUserFromSession(c)
 	log.Printf("%v", loggedUser)
 	if loggedUser.IsLogged {
+		// td: когда будут лекции выловить глюки
+		userTickets := mydatabase.FindUserLectionTicketsByField("user_id", loggedUser.User.ID)
+
+		log.Printf("user tickets: %v", userTickets)
+
+		c.Set("UserTickets", userTickets)
 		c.Set("LoggedUser", loggedUser)
 		if loggedUser.IsRoleFound {
 			switch loggedUser.Role.Lvl {
-			case 1:
+			case "listener":
 				// registered any user (listener):
-				c.HTML(http.StatusOK, "main_logged_lvl1.html", c.Keys)
-			case 4:
+				c.HTML(http.StatusOK, "main_logged_listener.html", c.Keys)
+			case "admin":
 				// admin:
-				c.HTML(http.StatusOK, "main_logged_lvl4.html", c.Keys)
+				c.HTML(http.StatusOK, "main_logged_admin.html", c.Keys)
 			default:
 				// все остальные роли:
-				c.HTML(http.StatusOK, "main_logged_other.html", c.Keys)
+				c.HTML(http.StatusOK, "main_nologged.html", c.Keys)
 			}
 			return
 		}
@@ -49,6 +55,13 @@ func SetWarningMsg(c *gin.Context, msg string) {
 func ShowUsers(c *gin.Context) {
 	c.Set("users", mydatabase.FindUsersByField("", ""))
 	c.HTML(http.StatusOK, "show_users.html", c.Keys)
+}
+
+// ShowAllLectures - shows all lectures
+func ShowAllLectures(c *gin.Context) {
+	leclocs := mydatabase.FindLecturesLocationsByField("", "")
+	c.Set("leclocs", leclocs)
+	c.HTML(http.StatusOK, "show_all_lectures.html", c.Keys)
 }
 
 // GetUserFromSession - достает объект User из сессии
@@ -374,7 +387,7 @@ func GotoLoginIfNotLogged(c *gin.Context) {
 func GotoAccessDeniedIfNotAdmin(c *gin.Context) {
 	u := GetLoggedUserFromSession(c)
 	// только в одном случае все ОК:
-	if u.IsLogged && u.IsRoleFound && u.Role.Lvl >= 4 {
+	if u.IsLogged && u.IsRoleFound && u.Role.Lvl == "admin" {
 		return
 	}
 	// иначе редирект
@@ -399,12 +412,12 @@ type LoggedUser struct {
 // GetLoggedUserRoleLvl - возвращает уровень роли пользователя
 // возвращает 0 если роьне найдена или пользователь не залогинен
 // todo: сейчас не проверить, т.к. нету пользователей с ролями меньшими 4
-func GetLoggedUserRoleLvl(lu LoggedUser) int {
+func GetLoggedUserRoleLvl(lu LoggedUser) string {
 	if !lu.IsLogged {
-		return 0
+		return ""
 	}
 	if !lu.IsRoleFound {
-		return 0
+		return ""
 	}
 	return lu.Role.Lvl
 }

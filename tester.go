@@ -53,7 +53,8 @@ func main() {
 	router.GET("/logout", func(c *gin.Context) {
 		// для разлогина сохраним емаил, по которому пользователь не найдется
 		mysession.SaveEmail(c, "")
-		app.ShowMainPage(c)
+		// app.ShowMainPage(c)
+		c.Redirect(http.StatusTemporaryRedirect, "/")
 	})
 
 	router.GET("/registration/start", func(c *gin.Context) {
@@ -136,6 +137,11 @@ func main() {
 			mylectures.POST("/save", app.SaveLecture)
 			mylectures.Any("/delete", app.DeleteLecture)
 		}
+	}
+
+	listener := router.Group("/listener")
+	{
+		listener.Any("all_lectures", app.ShowAllLectures)
 	}
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> запуск! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
