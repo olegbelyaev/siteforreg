@@ -64,6 +64,19 @@ func ShowAllLectures(c *gin.Context) {
 	c.HTML(http.StatusOK, "show_all_lectures.html", c.Keys)
 }
 
+// BuyTicket - покупка пользователем билета на лекцию
+func BuyTicket(c *gin.Context) {
+	u := GetLoggedUserFromSession(c)
+	lectureIDstr := c.Query("lecture_id")
+	lectureID, err := strconv.Atoi(lectureIDstr)
+	ifErr.Panic("lecture_id:", err)
+	ok := mydatabase.BuyTicket(u.User.ID, lectureID)
+	if !ok {
+		SetWarningMsg(c, "Что-то пошло не так")
+	}
+	c.Redirect(http.StatusTemporaryRedirect, "/")
+}
+
 // GetUserFromSession - достает объект User из сессии
 func GetUserFromSession(c *gin.Context) (mydatabase.User, bool) {
 	var user mydatabase.User
@@ -115,7 +128,7 @@ func ShowMyLocOrgs(c *gin.Context) {
 	c.HTML(http.StatusOK, "show_locorgs.html", c.Keys)
 }
 
-// ShowMyLecures - shows lections manage page
+// ShowMyLectures - shows lections manage page
 func ShowMyLectures(c *gin.Context) {
 	locationIDStr := c.Query("location_id")
 	c.Set("LocationID", locationIDStr)

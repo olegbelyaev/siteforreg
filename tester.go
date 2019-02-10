@@ -119,7 +119,6 @@ func main() {
 
 		mylectures := manage.Group("/lectures")
 		{
-			mylectures.Any("/", app.ShowMyLectures)
 
 			mylectures.Any("/new", func(c *gin.Context) {
 				LocationID := c.Query("location_id")
@@ -139,9 +138,18 @@ func main() {
 		}
 	}
 
-	listener := router.Group("/listener")
+	router.Any("/all_lectures", app.ShowAllLectures)
+
+	my := router.Group("/my")
 	{
-		listener.Any("all_lectures", app.ShowAllLectures)
+		my.Use(app.GotoLoginIfNotLogged)
+
+		tickets := my.Group("/tickets")
+		{
+
+			tickets.Any("/buy", app.BuyTicket)
+
+		}
 	}
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> запуск! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<

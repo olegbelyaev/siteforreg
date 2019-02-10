@@ -124,3 +124,11 @@ func DeleteLecture(lectureID interface{}) {
 		"DELETE FROM lectures WHERE id=?", lectureID)
 	ifErr.Panic("Can't delete lecture ", err)
 }
+
+// BuyTicket - user buy ticket for lecture
+func BuyTicket(userID int, lectureID int) (ok bool) {
+	res, err := GetDBRSession(nil).Exec("INSERT INTO tickets (user_id, lecture_id) VALUES (?,?)", userID, lectureID)
+	ifErr.Panic("can't buy ticket", err)
+	_, err = res.LastInsertId()
+	return err == nil
+}
