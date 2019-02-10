@@ -1,13 +1,37 @@
 {{ template "_start_html" . }}
- <!-- . - c.Keys -->
+<!-- . - c.Keys -->
 
 <body>
 
-  {{ template "_navbar_main" . }}
+    {{ template "_navbar_main" . }}
+
+
+    {{ range $i, $ticket := .UserTickets }}
+
+
+    <div class="card text-center">
+        <div class="card-header">
+                <div>
+                    {{ .Lecture.When }}
+                </div>
+                <div>
+                    <a href="#" class="btn btn-light">Отказаться</a>
+                </div>
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">{{ .Lecture.Name }}</h5>
+            <p class="card-text">{{ .Lecture.Description }}</p>
+        </div>
+        <div class="card-footer text-muted">
+            {{ .Location.Name }} {{.Location.Address}}
+        </div>
+    </div>
+
+    {{ end }}
 
     <a class="btn btn-light" role="button" href="/all_lectures">Лекции</a>
-    
 
-  {{template "_bootstrap" . }}
+
+    {{template "_bootstrap" . }}
 </body>
 {{template "_end_html" . }}

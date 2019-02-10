@@ -24,8 +24,6 @@ func ShowMainPage(c *gin.Context) {
 		// td: когда будут лекции выловить глюки
 		userTickets := mydatabase.FindUserLectionTicketsByField("user_id", loggedUser.User.ID)
 
-		log.Printf("user tickets: %v", userTickets)
-
 		c.Set("UserTickets", userTickets)
 		c.Set("LoggedUser", loggedUser)
 		if loggedUser.IsRoleFound {
