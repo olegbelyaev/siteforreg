@@ -2,7 +2,6 @@ package mydatabase
 
 import (
 	"os"
-
 	ifErr "github.com/olegbelyaev/siteforreg/errorwrapper"
 )
 
