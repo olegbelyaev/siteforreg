@@ -2,7 +2,6 @@ package mydatabase
 
 import (
 	"os"
-
 	ifErr "github.com/olegbelyaev/siteforreg/errorwrapper"
 )
 
@@ -49,12 +48,13 @@ func AddLocOrg(locationID int, organiserID int) {
 func AddInitAdmin() {
 	_, ok := FindUserByField("role_id", 1)
 	if !ok {
-		AddUser(User{
+		_,err:=AddUser(User{
 			Email:    "admin",
 			Fio:      "admin-fio",
 			RoleID:   1,
 			Password: os.Getenv("ADMIN_SECRET"),
 		})
+		ifErr.Panic("can't create init admin",err )
 	}
 
 }

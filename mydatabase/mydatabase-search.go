@@ -17,7 +17,7 @@ func FindUserByField(field string, value interface{}) (User, bool) {
 	var u User
 	_, err := GetDBRSession(nil).Select("*").From("users").Where(field+"=?", value).Load(&u)
 	ifErr.Log("Error while find user", err)
-	return u, err == nil
+	return u, u.ID!=0 && err == nil
 }
 
 // Ticket - bind user and lecture, which hi will listen

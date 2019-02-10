@@ -30,7 +30,7 @@ mariadb-exec-shell:
 
 mariadb-exec-sql-input:
 	[[ ! -f "mariadb_secret.txt" ]] && echo "mariadb_secret.txt not found! Createit and try again." && exit; \
-	docker exec -i site-forreg-mariadb mysql -p`cat mariadb_secret.txt` siteforeg --default-character-set=utf8 ;\
+	docker exec -i site-forreg-mariadb mysql -p`cat mariadb_secret.txt` --default-character-set=utf8 ;\
 	# sample: cat ./migrations/mariadb/init-database.sql | make mariadb-exec-sql-input
 
 mariadb-dump:
