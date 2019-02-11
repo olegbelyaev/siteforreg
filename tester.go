@@ -148,6 +148,7 @@ func main() {
 		{
 
 			tickets.Any("/buy", app.BuyTicket)
+			tickets.Any("/", app.ShowListenerTickets)
 
 		}
 	}

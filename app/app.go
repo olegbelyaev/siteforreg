@@ -21,7 +21,6 @@ func ShowMainPage(c *gin.Context) {
 	loggedUser := GetLoggedUserFromSession(c)
 	log.Printf("%v", loggedUser)
 	if loggedUser.IsLogged {
-		// td: когда будут лекции выловить глюки
 		userTickets := mydatabase.FindUserLectionTicketsByField("user_id", loggedUser.User.ID)
 
 		c.Set("UserTickets", userTickets)
@@ -42,6 +41,19 @@ func ShowMainPage(c *gin.Context) {
 		}
 	}
 	c.HTML(http.StatusOK, "main_nologged.html", c.Keys)
+}
+
+// ShowListenerTickets - показ билетов слушателя
+func ShowListenerTickets(c *gin.Context) {
+	loggedUser := GetLoggedUserFromSession(c)
+	if !loggedUser.IsLogged {
+		return
+	}
+	c.Set("LoggedUser", loggedUser)
+
+	userTickets := mydatabase.FindUserLectionTicketsByField("user_id", loggedUser.User.ID)
+	c.Set("UserTickets", userTickets)
+	c.HTML(http.StatusOK, "show_listener_tickets.html", c.Keys)
 }
 
 // SetWarningMsg - установка сообщения, которое пробросится в шаблоны ключем "warning_msg"

@@ -1,0 +1,26 @@
+{{ define "user_tickets" }}
+
+{{ range $i, $ticket := .UserTickets }}
+
+
+<div class="card text-center" >
+    <div class="card-header">
+        <div>
+            {{ .Lecture.When }}
+        </div>
+        <div>
+            <a href="#">Отказаться</a>
+        </div>
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">{{ .Lecture.Name }}</h5>
+        <p class="card-text">{{ .Lecture.Description }}</p>
+    </div>
+    <div class="card-footer text-muted">
+        {{ .Location.Name }} {{.Location.Address}}
+    </div>
+</div>
+
+{{ end }}
+
+{{ end }}

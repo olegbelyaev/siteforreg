@@ -5,22 +5,7 @@
     {{ template "_navbar_main" . }}
 
 
-    {{ range $i, $lecloc := .leclocs }}
-
-
-    <div class="jumbotron">
-        <h1 class="display-4">{{ .Lecture.Name }}</h1>
-        <p class="lead">{{ .Lecture.Description }}</p>
-        <hr class="my-4">
-        <p>
-            <a class="btn btn-primary btn-lg" href="/my/tickets/buy?lecture_id={{ .Lecture.ID }}" role="button">
-                Записаться
-            </a>
-        </p>
-        <p>{{ .Location.Name }} {{ .Location.Address }}</p>
-    </div>
-
-    {{ end }}
+    {{ template "all_lectures" . }}
 
 
     {{ template "_bootstrap" . }}

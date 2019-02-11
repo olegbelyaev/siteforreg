@@ -61,7 +61,8 @@
         Слушатель
     </a>
     <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-        <a class="dropdown-item" href="/listener/all_lectures">Все лекции</a>
+        <a class="dropdown-item" href="/all_lectures">Все мероприатия</a>
+        <a class="dropdown-item" href="/my/tickets/">Мои билеты</a>
     </div>
 </li>
 {{ end }}
@@ -83,9 +84,12 @@
     
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
-        {{ template "_admin_menu_dropdown" . }}
-
-        {{ template "_organizer_menu_dropdown" }}
+            
+            {{ template "_listener_menu_dropdown" }}
+            
+            {{ template "_organizer_menu_dropdown" }}
+            
+            {{ template "_admin_menu_dropdown" . }}
         
         {{ if .LoggedUser.IsLogged }}
         <a href="/logout" class="btn btn-outline-dark my-2 my-sm-0" role="button">Logout</a>
