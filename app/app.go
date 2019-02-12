@@ -21,15 +21,13 @@ func ShowMainPage(c *gin.Context) {
 	loggedUser := GetLoggedUserFromSession(c)
 	log.Printf("%v", loggedUser)
 	if loggedUser.IsLogged {
-		userTickets := mydatabase.FindUserLectionTicketsByField("user_id", loggedUser.User.ID)
-
-		c.Set("UserTickets", userTickets)
 		c.Set("LoggedUser", loggedUser)
 		if loggedUser.IsRoleFound {
 			switch loggedUser.Role.Lvl {
 			case "listener":
 				// registered any user (listener):
-				c.HTML(http.StatusOK, "main_logged_listener.html", c.Keys)
+				ShowListenerTickets(c)
+				return
 			case "admin":
 				// admin:
 				c.HTML(http.StatusOK, "main_logged_admin.html", c.Keys)
