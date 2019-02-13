@@ -49,7 +49,7 @@ func ShowListenerTickets(c *gin.Context) {
 	}
 	c.Set("LoggedUser", loggedUser)
 
-	userTickets := mydatabase.FindUserLectionTicketsByField("user_id", loggedUser.User.ID)
+	userTickets := mydatabase.FindUserLectionTicketsByField(loggedUser.User.ID, "", nil)
 	c.Set("UserTickets", userTickets)
 	c.HTML(http.StatusOK, "show_listener_tickets.html", c.Keys)
 }
@@ -78,9 +78,18 @@ func BuyTicket(c *gin.Context) {
 	lectureIDstr := c.Query("lecture_id")
 	lectureID, err := strconv.Atoi(lectureIDstr)
 	ifErr.Panic("lecture_id:", err)
+	//  нет ли уже забронированных пользователем мест:
+	userLectures := mydatabase.FindUserLectionTicketsByField(u.User.ID, "lecture_id", lectureID)
+	if len(userLectures) > 0 {
+		mysession.AddWarningFlash(c, "Вами уже забронировано место на это мероприятие")
+		// редиректим назад
+		c.Redirect(http.StatusTemporaryRedirect, c.Request.Referer())
+		return
+	}
+
 	ok := mydatabase.BuyTicket(u.User.ID, lectureID)
 	if !ok {
-		SetWarningMsg(c, "Что-то пошло не так")
+		SetWarningMsg(c, "ошибка, что-то пошло не так")
 	}
 	c.Redirect(http.StatusTemporaryRedirect, "/")
 }

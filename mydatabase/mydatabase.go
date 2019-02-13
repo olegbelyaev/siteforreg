@@ -10,6 +10,8 @@ import (
 	ifErr "github.com/olegbelyaev/siteforreg/errorwrapper"
 )
 
+// todo: ошибка too many connections!
+
 //Db -- pull of connections
 var Db *sql.DB
 

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 
+	"github.com/gocraft/dbr"
 	ifErr "github.com/olegbelyaev/siteforreg/errorwrapper"
 )
 
@@ -17,7 +18,7 @@ func FindUserByField(field string, value interface{}) (User, bool) {
 	var u User
 	_, err := GetDBRSession(nil).Select("*").From("users").Where(field+"=?", value).Load(&u)
 	ifErr.Log("Error while find user", err)
-	return u, u.ID!=0 && err == nil
+	return u, u.ID != 0 && err == nil
 }
 
 // Ticket - bind user and lecture, which hi will listen
@@ -35,18 +36,28 @@ type UserLectureTicket struct {
 	Ticket   Ticket
 }
 
-// FindUserLectionTicketsByField - find by tickets field
-func FindUserLectionTicketsByField(field string, value interface{}) (lectures []UserLectureTicket) {
+// FindUserLectionTicketsByField - find tickets by userID and any one field
+func FindUserLectionTicketsByField(userID int, field string, value interface{}) (lectures []UserLectureTicket) {
 	var u User
 	var le Lecture
 	var lo Location
 	var t Ticket
-	rows, err := GetDBRSession(nil).Select("*").From("users").
+
+	// Минимальное условие - по юзеру:
+	cond := dbr.Eq("tickets.user_id", userID)
+
+	// если указано (непусто) field, значит - дополнительное по AND условие в WHERE:
+	if len(field) > 0 {
+		cond = dbr.And(cond, dbr.Eq(field, value))
+	}
+
+	sql := GetDBRSession(nil).Select("*").From("users").
 		LeftJoin("tickets", "users.id=tickets.user_id").
 		LeftJoin("lectures", "tickets.lecture_id=lectures.id").
 		LeftJoin("locations", "lectures.location_id=locations.id").
-		Where(field+"=?", value).
-		Rows()
+		Where(cond)
+
+	rows, err := sql.Rows()
 
 	ifErr.Panic("error while find lections", err)
 
