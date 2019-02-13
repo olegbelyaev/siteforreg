@@ -85,6 +85,18 @@ func BuyTicket(c *gin.Context) {
 	c.Redirect(http.StatusTemporaryRedirect, "/")
 }
 
+func ReleaseListenerTicket(c *gin.Context) {
+	u := GetLoggedUserFromSession(c)
+	ticketIDStr := c.PostForm("ticket_id")
+	ticketID, err := strconv.Atoi(ticketIDStr)
+	ifErr.Panic("can't convert ticket_id to int", err)
+	ok := mydatabase.ReleaseTicket(ticketID, u.User.ID)
+	if !ok {
+		SetWarningMsg(c, "Что-то пошло не так")
+	}
+	c.Redirect(http.StatusTemporaryRedirect, "/")
+}
+
 // GetUserFromSession - достает объект User из сессии
 func GetUserFromSession(c *gin.Context) (mydatabase.User, bool) {
 	var user mydatabase.User

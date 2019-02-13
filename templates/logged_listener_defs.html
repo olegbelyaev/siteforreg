@@ -3,13 +3,16 @@
 {{ range $i, $ticket := .UserTickets }}
 
 
-<div class="card text-center" >
+<div class="card text-center">
     <div class="card-header">
         <div>
             {{ .Lecture.When }}
         </div>
         <div>
-            <a href="#">Отказаться</a>
+            <form method="post" action="/my/tickets/release" class="align-middle">
+                <input name="ticket_id" type="hidden" value="{{ .Ticket.ID }}">
+                <button type="submit" class="btn btn-danger btn-sm">Отказаться</button>
+            </form>
         </div>
     </div>
     <div class="card-body">

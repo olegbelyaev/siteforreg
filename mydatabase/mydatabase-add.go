@@ -2,6 +2,7 @@ package mydatabase
 
 import (
 	"os"
+
 	ifErr "github.com/olegbelyaev/siteforreg/errorwrapper"
 )
 
@@ -48,13 +49,13 @@ func AddLocOrg(locationID int, organiserID int) {
 func AddInitAdmin() {
 	_, ok := FindUserByField("role_id", 1)
 	if !ok {
-		_,err:=AddUser(User{
+		_, err := AddUser(User{
 			Email:    "admin",
 			Fio:      "admin-fio",
 			RoleID:   1,
 			Password: os.Getenv("ADMIN_SECRET"),
 		})
-		ifErr.Panic("can't create init admin",err )
+		ifErr.Panic("can't create init admin", err)
 	}
 
 }
@@ -131,4 +132,18 @@ func BuyTicket(userID int, lectureID int) (ok bool) {
 	ifErr.Panic("can't buy ticket", err)
 	_, err = res.LastInsertId()
 	return err == nil
+}
+
+// ReleaseTicket - удалить билет из БД
+func ReleaseTicket(ticketID int, userID int) bool {
+	// удалить из БД ticketID для userID
+	res, err := GetDBRSession(nil).DeleteFrom("tickets").
+		Where("id=? AND user_id=?", ticketID, userID).Limit(1).Exec()
+	ifErr.Panic("Can't exec delete ticket", err)
+	affected, err := res.RowsAffected()
+	ifErr.Panic("Can't get rows affected after deleting ticket", err)
+	if affected == 0 {
+		return false
+	}
+	return true
 }
