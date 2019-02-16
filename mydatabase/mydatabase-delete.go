@@ -13,13 +13,20 @@ func DeleteLocation(ID int) error {
 		return fmt.Errorf("ID must be >0")
 	}
 	// todo: проверить отсутствие на ней организаторов, и если есть , удалить их из locorg
-	_, err := GetDb().Query(`DELETE FROM locations WHERE id=?`, ID)
+	_, err := GetDBRSession(nil).DeleteFrom("locations").Where("id=?", ID).Exec()
 	return err
 }
 
 // DeleteLocorgs - удалить одну или несколько записей locorg
 func DeleteLocorgs(locationID int, userID int) error {
-	_, err := GetDb().Query(`DELETE FROM locorg WHERE location_id=? AND organizer_id=?`, locationID, userID)
+	// _, err := GetDb().Query(`DELETE FROM locorg WHERE location_id=? AND organizer_id=?`, locationID, userID)
+	_, err := GetDBRSession(nil).DeleteFrom("locorg").
+		Where(
+			dbr.And(
+				dbr.Eq("location_id", locationID),
+				dbr.Eq("organizer_id", userID))).
+		Exec()
+
 	return err
 }
 
