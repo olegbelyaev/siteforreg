@@ -119,7 +119,7 @@ func main() {
 
 		mylectures := manage.Group("/lectures")
 		{
-
+			mylectures.Any("/", app.LecturesOnLocation)
 			mylectures.Any("/new", func(c *gin.Context) {
 				LocationID := c.Query("location_id")
 				if len("location_id") == 0 {
@@ -149,7 +149,7 @@ func main() {
 
 			tickets.Any("/buy", app.BuyTicket)
 			tickets.Any("/", app.ShowListenerTickets)
-			tickets.POST("release",app.ReleaseListenerTicket)
+			tickets.POST("release", app.ReleaseListenerTicket)
 
 		}
 	}

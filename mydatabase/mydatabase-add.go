@@ -13,11 +13,6 @@ func No() string {
 
 // AddLocation -- add location to mydatabase
 func AddLocation(l Location) {
-	// conn := GetConn()
-	// defer conn.Close()
-	// conn.ExecContext(Ctx,
-	// 	"INSERT INTO locations (name,address) values(?,?)",
-	// 	l.Name, l.Address)
 
 	_, err := GetDBRSession(nil).
 		InsertInto("locations").
@@ -30,27 +25,30 @@ func AddLocation(l Location) {
 
 // AddUser -- add new user to mydatabase
 func AddUser(u User) (int64, error) {
-	conn := GetConn()
-	defer conn.Close()
-	result, err := conn.ExecContext(Ctx,
-		`INSERT INTO users (id, password, email, fio, role_id)
-		values(?,?,?,?,?)`,
-		u.ID, u.Password, u.Email, u.Fio, u.RoleID)
+	res, err := GetDBRSession(nil).InsertInto("users").
+		Pair("id", u.ID).
+		Pair("password", u.Password).
+		Pair("email", u.Email).
+		Pair("fio", u.Fio).
+		Pair("role_id", u.RoleID).
+		Exec()
+
 	if err != nil {
 		return 0, err
 	}
-	id, err := result.LastInsertId()
+	id, err := res.LastInsertId()
 	return id, err
 }
 
 // AddLocOrg - добавляет связ площадки и организатора в БД
 func AddLocOrg(locationID int, organiserID int) {
-	conn := GetConn()
-	defer conn.Close()
-	conn.ExecContext(Ctx,
-		`INSERT INTO locorg (location_id, organizer_id)
-	VALUES (?,?)`,
-		locationID, organiserID)
+	res, err := GetDBRSession(nil).InsertInto("locorg").
+		Pair("location_id", locationID).
+		Pair("organizer_id", organiserID).
+		Exec()
+	ifErr.Panic("can't insert into locorg", err)
+	_, err = res.LastInsertId()
+	ifErr.Panic("can't get last insert id after insert to locorg", err)
 }
 
 // AddInitAdmin - добавляет админа, если его нет в БД
@@ -93,68 +91,36 @@ func AddInitRoles() {
 
 // AddRole - добавляет роль в БД
 func AddRole(r Role) {
-	conn := GetConn()
-	defer conn.Close()
-	_, err := conn.ExecContext(Ctx,
-		"INSERT INTO roles (id, name, lvl) "+
-			"VALUES (?,?,?)",
-		r.ID, r.Name, r.Lvl)
-
-	ifErr.Panic("Can't insert new role", err)
+	res, err := GetDBRSession(nil).InsertInto("roles").
+		Columns("id", "name", "lvl").
+		Values(r.ID, r.Name, r.Lvl).
+		Exec()
+	ifErr.Panic("can't insert into roles", err)
+	_, err = res.LastInsertId()
+	ifErr.Panic("can't get last insert id after insert to roles", err)
 }
 
 // AddLecture - adds lecture to db
 func AddLecture(l Lecture) {
-	conn := GetConn()
-	defer conn.Close()
-	_, err := conn.ExecContext(Ctx,
-		"INSERT INTO lectures (location_id, `when`, group_name, max_seets, name, description) "+
-			"VALUES (?,?,?,?,?,?)",
-		l.LocationID, l.When, l.GroupName, l.MaxSeets, l.Name, l.Description)
-
-	ifErr.Panic("Can't insert new lecture", err)
-}
-
-// SaveLecture - saves lecture to db
-func SaveLecture(l Lecture) {
-	conn := GetConn()
-	defer conn.Close()
-	_, err := conn.ExecContext(Ctx,
-		"UPDATE lectures SET location_id=?, `when`=?, group_name=?, max_seets=?, name=?, description=? "+
-			"WHERE id=?",
-		l.LocationID, l.When, l.GroupName, l.MaxSeets, l.Name, l.Description, l.ID)
-
-	ifErr.Panic("Can't save lecture", err)
-}
-
-// DeleteLecture - deletes lecture from db
-func DeleteLecture(lectureID interface{}) {
-	// todo:переписать на методах
-	_, err := GetConn().ExecContext(Ctx,
-		"DELETE FROM lectures WHERE id=?", lectureID)
-	ifErr.Panic("Can't delete lecture ", err)
+	_, err := GetDBRSession(nil).InsertInto("lectures").
+		Pair("location_id", l.LocationID).
+		Pair("when", l.When).
+		Pair("group_name", l.GroupName).
+		Pair("max_seets", l.MaxSeets).
+		Pair("name", l.Name).
+		Pair("description", l.Description).
+		Exec()
+	ifErr.Panic("can't insert into lectures", err)
 }
 
 // BuyTicket - user buy ticket for lecture
 func BuyTicket(userID int, lectureID int) (ok bool) {
 
-	res, err := GetDBRSession(nil).Exec("INSERT INTO tickets (user_id, lecture_id) VALUES (?,?)", userID, lectureID)
-	ifErr.Panic("can't buy ticket", err)
-	_, err = res.LastInsertId()
-	ifErr.Panic("Can't get last insert id", err)
-	return false
-}
+	_, err := GetDBRSession(nil).InsertInto("tickets").
+		Pair("user_id", userID).
+		Pair("lecture_id", lectureID).
+		Exec()
 
-// ReleaseTicket - удалить билет из БД
-func ReleaseTicket(ticketID int, userID int) bool {
-	// удалить из БД ticketID для userID
-	res, err := GetDBRSession(nil).DeleteFrom("tickets").
-		Where("id=? AND user_id=?", ticketID, userID).Limit(1).Exec()
-	ifErr.Panic("Can't exec delete ticket", err)
-	affected, err := res.RowsAffected()
-	ifErr.Panic("Can't get rows affected after deleting ticket", err)
-	if affected == 0 {
-		return false
-	}
+	ifErr.Panic("Can't get last insert id", err)
 	return true
 }

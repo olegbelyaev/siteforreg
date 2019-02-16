@@ -157,8 +157,8 @@ func ShowMyLocOrgs(c *gin.Context) {
 	c.HTML(http.StatusOK, "show_locorgs.html", c.Keys)
 }
 
-// ShowMyLectures - shows lections manage page
-func ShowMyLectures(c *gin.Context) {
+// LecturesOnLocation - shows lections on loation
+func LecturesOnLocation(c *gin.Context) {
 	locationIDStr := c.Query("location_id")
 	c.Set("LocationID", locationIDStr)
 	c.Set("lectures", mydatabase.FindLecturesByField("location_id", locationIDStr))
@@ -386,11 +386,7 @@ func SaveLocation(c *gin.Context) {
 	}
 
 	// ошибок нет, сохраняем данные в бд
-	_, err := mydatabase.UpdateLocation(formLocation)
-	if err != nil {
-		c.Set("warning_msg", err.Error())
-		// c.Abort()
-	}
+	mydatabase.UpdateLocation(formLocation)
 	ShowLocations(c)
 
 }
