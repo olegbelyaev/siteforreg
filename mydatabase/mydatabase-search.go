@@ -80,18 +80,14 @@ func FindUserLectionTicketsByField(userID int, field string, value interface{}) 
 
 // FindRoleByID - поиск роли по ее ID
 func FindRoleByID(id int) (Role, bool) {
-	rows, err := GetDb().Query("SELECT * FROM roles WHERE id=?", id)
-	if err != nil {
-		panic("error in select: " + err.Error())
-	}
 	var r Role
-	for rows.Next() {
-		if err := rows.Scan(&r.ID, &r.Name, &r.Lvl); err != nil {
-			panic("Scan error:" + err.Error())
-		}
-		return r, true
+
+	err := GetDBRSession(nil).Select("*").From("roles").Where("id=?", id).Limit(1).LoadOne(&r)
+
+	if err == dbr.ErrNotFound {
+		return r, false
 	}
-	return r, false
+	return r, true
 }
 
 // FindLocationsByField - ищет площадки по одному из полей или все, если поле пустое
@@ -127,32 +123,13 @@ func FindLocationsByField(field string, value interface{}) (locations []Location
 // FindUsersByField - ищет пользователей (field=""выбирает все записи)
 func FindUsersByField(field string, value interface{}) (users []User) {
 
-	var rows *sql.Rows
-	var err error
+	sql := GetDBRSession(nil).Select("*").From("users")
 	if len(field) > 0 {
-		// если имя поля непустое
-		rows, err = GetDb().Query("SELECT * FROM users WHERE "+field+"=?", value)
-		if err != nil {
-			panic("error in sql select: " + err.Error())
-		}
-
-	} else {
-		// если имя поля пустое
-		rows, err = GetDb().Query("SELECT * FROM users")
-		if err != nil {
-			panic("error in sql select: " + err.Error())
-		}
+		sql = sql.Where(dbr.Eq(field, value))
 	}
-
-	var u User
-	for rows.Next() {
-		if err := rows.Scan(&u.ID, &u.Password, &u.Email,
-			&u.Fio, &u.RoleID); err != nil {
-			panic("Scan error:" + err.Error())
-		}
-		users = append(users, u)
-	}
-	return
+	_, err := sql.Load(&users)
+	ifErr.Panic("Can't find users", err)
+	return users
 }
 
 // FindLocOrgsByField - поиск в таблице locorg по значению поля (или всех если field="")
@@ -227,6 +204,7 @@ func FindLecturesByField(field string, value interface{}) (lectures []Lecture) {
 	return
 }
 
+// LectureLocation - type with Lecture and his Location inside
 type LectureLocation struct {
 	Lecture  Lecture
 	Location Location

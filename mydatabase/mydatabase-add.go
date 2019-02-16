@@ -13,11 +13,19 @@ func No() string {
 
 // AddLocation -- add location to mydatabase
 func AddLocation(l Location) {
-	conn := GetConn()
-	defer conn.Close()
-	conn.ExecContext(Ctx,
-		"INSERT INTO locations (name,address) values(?,?)",
-		l.Name, l.Address)
+	// conn := GetConn()
+	// defer conn.Close()
+	// conn.ExecContext(Ctx,
+	// 	"INSERT INTO locations (name,address) values(?,?)",
+	// 	l.Name, l.Address)
+
+	_, err := GetDBRSession(nil).
+		InsertInto("locations").
+		Columns("name", "address").
+		Values(l.Name, l.Address).
+		Exec()
+
+	ifErr.Panic("Can't insert location", err)
 }
 
 // AddUser -- add new user to mydatabase
@@ -92,7 +100,7 @@ func AddRole(r Role) {
 			"VALUES (?,?,?)",
 		r.ID, r.Name, r.Lvl)
 
-	ifErr.Panic("Can't insert new lecture", err)
+	ifErr.Panic("Can't insert new role", err)
 }
 
 // AddLecture - adds lecture to db
