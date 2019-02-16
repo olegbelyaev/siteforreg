@@ -5,13 +5,9 @@
 
     {{ template "_navbar_main" . }}
 
-    <div class="container-fluid">
-        <h2>Хочешь попасть на интересную лекцию? </h2>
-        <p>Зарегистрируйся на нее заранее</p>
-        <h2>Как спланировать мероприятие?</h2>
-        <div>Создай мероприятие на своей лощадке и открывай регистрацию для слушателей</div>
-        <p>...</p>
-    </div>
+    {{ template "landing" . }}
+
+    {{ template "all_lectures" . }}
 
     {{template "_bootstrap" . }}
 </body>

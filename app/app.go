@@ -33,11 +33,17 @@ func ShowMainPage(c *gin.Context) {
 				c.HTML(http.StatusOK, "main_logged_admin.html", c.Keys)
 			default:
 				// все остальные роли:
+				// список лекций и где они:
+				leclocs := mydatabase.FindLecturesLocationsByField("", "")
+				c.Set("leclocs", leclocs)
 				c.HTML(http.StatusOK, "main_nologged.html", c.Keys)
 			}
 			return
 		}
 	}
+	// список лекций и где они:
+	leclocs := mydatabase.FindLecturesLocationsByField("", "")
+	c.Set("leclocs", leclocs)
 	c.HTML(http.StatusOK, "main_nologged.html", c.Keys)
 }
 
