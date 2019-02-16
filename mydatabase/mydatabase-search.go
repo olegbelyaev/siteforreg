@@ -1,7 +1,6 @@
 package mydatabase
 
 import (
-	"database/sql"
 	"log"
 
 	"github.com/gocraft/dbr"
@@ -93,31 +92,13 @@ func FindRoleByID(id int) (Role, bool) {
 // FindLocationsByField - ищет площадки по одному из полей или все, если поле пустое
 func FindLocationsByField(field string, value interface{}) (locations []Location) {
 
-	var rows *sql.Rows
-	var err error
+	sql := GetDBRSession(nil).Select("*").From("locations")
 	if len(field) > 0 {
-		// если имя поля непустое
-		rows, err = GetDb().Query("SELECT * FROM locations WHERE "+field+"=?", value)
-		if err != nil {
-			panic("error in sql select: " + err.Error())
-		}
-
-	} else {
-		// если имя поля пустое
-		rows, err = GetDb().Query("SELECT * FROM locations")
-		if err != nil {
-			panic("error in sql select: " + err.Error())
-		}
+		sql = sql.Where(dbr.Eq(field, value))
 	}
-
-	var l Location
-	for rows.Next() {
-		if err := rows.Scan(&l.ID, &l.Name, &l.Address); err != nil {
-			panic("Scan error:" + err.Error())
-		}
-		locations = append(locations, l)
-	}
-	return
+	_, err := sql.Load(&locations)
+	ifErr.Panic("Can't fins locations", err)
+	return locations
 }
 
 // FindUsersByField - ищет пользователей (field=""выбирает все записи)
@@ -135,38 +116,24 @@ func FindUsersByField(field string, value interface{}) (users []User) {
 // FindLocOrgsByField - поиск в таблице locorg по значению поля (или всех если field="")
 func FindLocOrgsByField(field string, value interface{}) (locorgs []LocOrg) {
 
-	var rows *sql.Rows
-	var err error
+	sql := GetDBRSession(nil).Select("l.*,u.*").
+		From(dbr.I("locorg").As("lo")).
+		LeftJoin(dbr.I("users").As("u"), "lo.organizer_id=u.id").
+		LeftJoin(dbr.I("locations").As("l"), "lo.location_id=l.id")
+
 	if len(field) > 0 {
-		// если имя поля непустое
-		sqlQuery := `SELECT l.*,u.* 
-		FROM locorg lo
-		LEFT JOIN users u ON lo.organizer_id=u.id
-		LEFT JOIN locations l on lo.location_id=l.id
-		WHERE ` + field + "=?"
-
-		rows, err = GetDb().Query(sqlQuery, value)
-		// panic(fmt.Sprintf(sqlQuery, value))
-		if err != nil {
-			panic("error in sqlQuery select: " + err.Error())
-		}
-
-	} else {
-		// если имя поля пустое
-		rows, err = GetDb().Query(`SELECT l.*,u.* FROM locorg lo
-			LEFT JOIN users u ON lo.organizer_id=u.id
-			LEFT JOIN locations l on lo.location_id=l.id`)
-		if err != nil {
-			panic("error in sqlQuery select: " + err.Error())
-		}
+		sql = sql.Where(dbr.Eq(field, value))
 	}
+
+	rows, err := sql.Rows()
+	ifErr.Panic("Can't get rows for locorgs", err)
 
 	var lo LocOrg
 	for rows.Next() {
 		if err := rows.Scan(&lo.Location.ID, &lo.Location.Name, &lo.Location.Address,
 			&lo.Organizer.ID, &lo.Organizer.Password, &lo.Organizer.Email,
 			&lo.Organizer.Fio, &lo.Organizer.RoleID); err != nil {
-			// если запро с с left join то могут быть
+			// если запрос с left join то могут быть
 			// висячие locorgs указывающие на никакую прощадку
 			log.Printf("Skipped bad incostistent locorg record")
 			continue
@@ -174,24 +141,19 @@ func FindLocOrgsByField(field string, value interface{}) (locorgs []LocOrg) {
 		}
 		locorgs = append(locorgs, lo)
 	}
-	return
+	return locorgs
+
 }
 
 // FindLecturesByField - ищет лекции по имени и значению поля. Если field=="" ищет все лекции.
 func FindLecturesByField(field string, value interface{}) (lectures []Lecture) {
 
-	var rows *sql.Rows
-	var err error
+	sql := GetDBRSession(nil).Select("*").From("lectures")
 	if len(field) > 0 {
-		// если имя поля непустое
-		rows, err = GetDb().Query("SELECT * FROM lectures WHERE "+field+"=?", value)
-		ifErr.Panic("Can't sql select (lectures): ", err)
-
-	} else {
-		// если имя поля пустое
-		rows, err = GetDb().Query("SELECT * FROM lectures")
-		ifErr.Panic("Can't sql select (all lectures): ", err)
+		sql = sql.Where(dbr.Eq(field, value))
 	}
+	rows, err := sql.Rows()
+	ifErr.Panic("Can't get rows from lectures", err)
 
 	var l Lecture
 	for rows.Next() {
