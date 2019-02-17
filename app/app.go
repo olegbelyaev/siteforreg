@@ -20,31 +20,18 @@ import (
 func ShowMainPage(c *gin.Context) {
 	loggedUser := GetLoggedUserFromSession(c)
 	log.Printf("%v", loggedUser)
+
+	leclocs := mydatabase.FindLecturesLocationsByField("", "")
+	c.Set("leclocs", leclocs)
+
 	if loggedUser.IsLogged {
 		c.Set("LoggedUser", loggedUser)
 
-		if loggedUser.User.Roles >= 4 { //admin
-			c.HTML(http.StatusOK, "main_logged_admin.html", c.Keys)
-			return
-		}
-
-		if loggedUser.User.Roles >= 2 { // organizer
-			ShowListenerTickets(c)
-			return
-		}
-
-		// все остальные роли:
-		// список лекций и где они:
-		leclocs := mydatabase.FindLecturesLocationsByField("", "")
-		c.Set("leclocs", leclocs)
-		c.HTML(http.StatusOK, "main_nologged.html", c.Keys)
-
+		c.HTML(http.StatusOK, "main_logged.html", c.Keys)
+		return
 	}
 
 	// незалогированый юзер
-	// список лекций и где они:
-	leclocs := mydatabase.FindLecturesLocationsByField("", "")
-	c.Set("leclocs", leclocs)
 	c.HTML(http.StatusOK, "main_nologged.html", c.Keys)
 }
 
