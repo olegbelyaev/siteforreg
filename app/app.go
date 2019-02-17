@@ -22,25 +22,26 @@ func ShowMainPage(c *gin.Context) {
 	log.Printf("%v", loggedUser)
 	if loggedUser.IsLogged {
 		c.Set("LoggedUser", loggedUser)
-		if loggedUser.IsRoleFound {
-			switch loggedUser.Role.Lvl {
-			case "listener":
-				// registered any user (listener):
-				ShowListenerTickets(c)
-				return
-			case "admin":
-				// admin:
-				c.HTML(http.StatusOK, "main_logged_admin.html", c.Keys)
-			default:
-				// все остальные роли:
-				// список лекций и где они:
-				leclocs := mydatabase.FindLecturesLocationsByField("", "")
-				c.Set("leclocs", leclocs)
-				c.HTML(http.StatusOK, "main_nologged.html", c.Keys)
-			}
+
+		if loggedUser.User.Roles >= 4 { //admin
+			c.HTML(http.StatusOK, "main_logged_admin.html", c.Keys)
 			return
 		}
+
+		if loggedUser.User.Roles >= 2 { // organizer
+			ShowListenerTickets(c)
+			return
+		}
+
+		// все остальные роли:
+		// список лекций и где они:
+		leclocs := mydatabase.FindLecturesLocationsByField("", "")
+		c.Set("leclocs", leclocs)
+		c.HTML(http.StatusOK, "main_nologged.html", c.Keys)
+
 	}
+
+	// незалогированый юзер
 	// список лекций и где они:
 	leclocs := mydatabase.FindLecturesLocationsByField("", "")
 	c.Set("leclocs", leclocs)
@@ -126,16 +127,11 @@ func GetUserFromSession(c *gin.Context) (mydatabase.User, bool) {
 // GetLoggedUserFromSession - получает из сессии email юзера.
 // Создает структуру User поиском в БД по email. Если не найден - ставит IsLogged=false.
 // Сохраняет юзера в поле User.
-// По полю User.RoleID находит роль в БД. Если не найден ставит IsRoleFound=false.
-// Сохраняет роль в поле Role.
 func GetLoggedUserFromSession(c *gin.Context) LoggedUser {
 	userFromSess, ok := GetUserFromSession(c)
 	var lu = LoggedUser{
 		IsLogged: ok,
 		User:     userFromSess,
-	}
-	if lu.IsLogged {
-		lu.Role, lu.IsRoleFound = mydatabase.FindRoleByID(lu.User.RoleID)
 	}
 	return lu
 }
@@ -240,17 +236,20 @@ func AddLocOrg(c *gin.Context) {
 		c.Set("user_id", userID)
 	}
 
+	// если не указана площадка спросить id площадки:
 	if len(locID) == 0 {
 		c.Set("locations", mydatabase.FindLocationsByField("", ""))
 		c.HTML(http.StatusOK, "select_location.html", c.Keys)
 		return
 	}
+	// если не указан юзер, спросить id юзера:
 	if len(userID) == 0 {
 		c.Set("users", mydatabase.FindUsersByField("", ""))
 		// panic(fmt.Sprintf("------------------>%s", c.Keys))
 		c.HTML(http.StatusOK, "select_user.html", c.Keys)
 		return
 	}
+
 	locIDint, err := strconv.Atoi(locID)
 	if err != nil {
 		panic("Can't parse as int:" + locID)
@@ -260,6 +259,9 @@ func AddLocOrg(c *gin.Context) {
 		panic("Can't parse as int:" + userID)
 	}
 	mydatabase.AddLocOrg(locIDint, userIDint)
+
+	// добавить юзеру роль организатора
+	mydatabase.AddUserRole(userIDint, mydatabase.UserRoleOrganizer)
 	ShowLocorgs(c)
 
 }
@@ -292,10 +294,14 @@ func DeleteLocorg(c *gin.Context) {
 // ShowLocations - список площадок
 func ShowLocations(c *gin.Context) {
 	userID := c.Query("user_id")
-	if len(userID) > 0 {
-		c.Set("locations", mydatabase.FindLocationsByField(userID, ""))
-	}
-	c.Set("locations", mydatabase.FindLocationsByField("", ""))
+	// if len(userID) > 0 {
+	locations := mydatabase.FindLocationsByField(userID, "")
+	// }else{
+
+	// }
+	c.Set("locations", locations)
+	// panic(fmt.Sprintf("%v", locations))
+	// c.Set("locations", mydatabase.FindLocationsByField("", ""))
 	c.HTML(http.StatusOK, "locations.html", c.Keys)
 }
 
@@ -431,39 +437,19 @@ func GotoLoginIfNotLogged(c *gin.Context) {
 func GotoAccessDeniedIfNotAdmin(c *gin.Context) {
 	u := GetLoggedUserFromSession(c)
 	// только в одном случае все ОК:
-	if u.IsLogged && u.IsRoleFound && u.Role.Lvl == "admin" {
+	if u.IsLogged && u.User.Roles >= 4 { // admin
 		return
 	}
-	// иначе редирект
-	// todo: установка s.Set с редиректом не работает,
-	// можно будет использовать флеш-сообщения через сесии
-	// c.Redirect(http.StatusTemporaryRedirect, "/")
-	// остановить цепочку
+	// если не админ:
+	mysession.AddWarningFlash(c, "Недостаточно прав")
+	c.Redirect(http.StatusTemporaryRedirect, "/")
 	c.Abort()
-	// перенаправить на главную:
-	c.Set("warning_msg", "Недостаточно прав")
-	ShowMainPage(c)
 }
 
 // LoggedUser - IsLogged field answers on question "Is user logged?"
 type LoggedUser struct {
-	IsLogged    bool
-	User        mydatabase.User
-	IsRoleFound bool
-	Role        mydatabase.Role
-}
-
-// GetLoggedUserRoleLvl - возвращает уровень роли пользователя
-// возвращает 0 если роьне найдена или пользователь не залогинен
-// todo: сейчас не проверить, т.к. нету пользователей с ролями меньшими 4
-func GetLoggedUserRoleLvl(lu LoggedUser) string {
-	if !lu.IsLogged {
-		return ""
-	}
-	if !lu.IsRoleFound {
-		return ""
-	}
-	return lu.Role.Lvl
+	IsLogged bool
+	User     mydatabase.User
 }
 
 // RegistrationEnd - обработка формы регистрации
@@ -472,7 +458,7 @@ func RegistrationEnd(c *gin.Context) {
 		Email:    c.PostForm("email"),
 		Password: GenerateSecret(),
 		Fio:      c.PostForm("fio"),
-		RoleID:   4,
+		Roles:    1,
 	}
 	_, ok := mydatabase.FindUserByEmail(user.Email)
 	if ok {

@@ -12,7 +12,7 @@
                 <th>ID</th>
                 <th>Fio</th>
                 <th>Email</th>
-                <th>RoleID</th>
+                <th>Roles</th>
                 <th>Площадка</th>
                 <th>Адрес</th>
             </tr>
@@ -24,7 +24,7 @@
                 <td scope="row">{{ .Organizer.ID }}</td>
                 <td>{{ .Organizer.Fio }}</td>
                 <td>{{ .Organizer.Email }}</td>
-                <td>{{ .Organizer.RoleID }}</td>
+                <td>{{ .Organizer.Roles }}</td>
                 <td>{{ .Location.Name }}</td>
                 <td><a href="/manage/lectures/?location_id={{ .Location.ID }}" role="button" class="btn btn-secondary">Лекции</a></td>
 

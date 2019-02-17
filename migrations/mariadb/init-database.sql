@@ -7,18 +7,13 @@ create table IF NOT EXISTS locations (
     `address` varchar(255) not null default ""
     );
 
-create table IF NOT EXISTS roles (
-    `id` int(11) primary key not null,
-    `name` varchar(100) not null default "",
-    `lvl` varchar(20) not null default "listener"
-);
 
-create table IF NOT EXISTS users (
-    `id` int auto_increment primary key not null, 
-    `password` varchar(30) not null default "", 
-    `email` varchar(100) not null default "",
-    `fio` varchar(250) not null default "",
-    `role_id` int not null default 4 
+CREATE TABLE IF NOT EXISTS `users` (
+    `id` int(11) NOT NULL AUTO_INCREMENT primary key , 
+    `password` varchar(30) NOT NULL DEFAULT "", 
+    `email` varchar(100) NOT NULL DEFAULT "", 
+    `fio` varchar(250)  NOT NULL DEFAULT "", 
+    `roles` Set('listener','organizer','admin')
     );
 
 

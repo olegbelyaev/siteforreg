@@ -25,8 +25,17 @@ type User struct {
 	Email    string
 	Password string
 	Fio      string
-	RoleID   int
+	Roles    int
 }
+
+// UserRoleListener - слушательская составляющая поля roles таблицы users
+const UserRoleListener = 1
+
+// UserRoleOrganizer - организаторская составляющая поля roles таблицы users
+const UserRoleOrganizer = 2
+
+// UserRoleAdmin - админская составляющая поля roles таблицы users
+const UserRoleAdmin = 4
 
 // LocOrg - represent Locations binded with Organizers
 type LocOrg struct {

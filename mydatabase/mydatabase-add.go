@@ -2,6 +2,7 @@ package mydatabase
 
 import (
 	"os"
+	"strconv"
 
 	ifErr "github.com/olegbelyaev/siteforreg/errorwrapper"
 )
@@ -30,7 +31,7 @@ func AddUser(u User) (int64, error) {
 		Pair("password", u.Password).
 		Pair("email", u.Email).
 		Pair("fio", u.Fio).
-		Pair("role_id", u.RoleID).
+		Pair("roles", u.Roles).
 		Exec()
 
 	if err != nil {
@@ -40,64 +41,47 @@ func AddUser(u User) (int64, error) {
 	return id, err
 }
 
-// AddLocOrg - добавляет связ площадки и организатора в БД
+// AddLocOrg - добавляет связь площадки и организатора в БД
 func AddLocOrg(locationID int, organiserID int) {
-	res, err := GetDBRSession(nil).InsertInto("locorg").
+	_, err := GetDBRSession(nil).InsertInto("locorg").
 		Pair("location_id", locationID).
 		Pair("organizer_id", organiserID).
 		Exec()
 	ifErr.Panic("can't insert into locorg", err)
-	_, err = res.LastInsertId()
-	ifErr.Panic("can't get last insert id after insert to locorg", err)
+}
+
+// AddUserRole - role: +/-1 -for listener, +/-2 - for organizer, +/-4 - for admin
+func AddUserRole(userID int, role int) {
+	roleStr := strconv.Itoa(role)
+	sqlSet := ""
+	if role > 0 {
+		// добавление role к существующим ролям:
+		sqlSet = "roles|" + roleStr
+	}
+	if role < 0 {
+		// вычитание role из существующих, только если существующие роли больше вычитаемой:
+		sqlSet = "if(0+roles>" + roleStr + ",roles-" + roleStr + ",'')"
+	}
+	if len(sqlSet) == 0 {
+		return
+	}
+
+	GetDBRSession(nil).Exec("UPDATE users SET roles="+sqlSet+" WHERE id=?", userID)
 }
 
 // AddInitAdmin - добавляет админа, если его нет в БД
 func AddInitAdmin() {
-	_, ok := FindUserByField("role_id", 1)
-	if !ok {
+	uu := FindUsersByIntRole(4)
+	if len(uu) == 0 {
+		// нет админов, создаем:
 		_, err := AddUser(User{
 			Email:    "admin",
 			Fio:      "admin-fio",
-			RoleID:   1,
+			Roles:    4, //"admin",
 			Password: os.Getenv("ADMIN_SECRET"),
 		})
 		ifErr.Panic("can't create init admin", err)
 	}
-
-}
-
-// AddInitRoles - добавляет начальную роль суперадмина
-// INSERT INTO roles (id,name,lvl) VALUES (1,"root", 4);
-func AddInitRoles() {
-	// admin:
-	_, alreadyExists := FindRoleByID(1)
-	if !alreadyExists {
-		AddRole(Role{
-			ID:   1,
-			Name: "Администратор",
-			Lvl:  "admin",
-		})
-	}
-	// listener:
-	_, alreadyExists = FindRoleByID(4)
-	if !alreadyExists {
-		AddRole(Role{
-			ID:   4,
-			Name: "Слушатель",
-			Lvl:  "listener",
-		})
-	}
-}
-
-// AddRole - добавляет роль в БД
-func AddRole(r Role) {
-	res, err := GetDBRSession(nil).InsertInto("roles").
-		Columns("id", "name", "lvl").
-		Values(r.ID, r.Name, r.Lvl).
-		Exec()
-	ifErr.Panic("can't insert into roles", err)
-	_, err = res.LastInsertId()
-	ifErr.Panic("can't get last insert id after insert to roles", err)
 }
 
 // AddLecture - adds lecture to db
