@@ -134,6 +134,7 @@ func main() {
 			mylectures.Any("edit", app.EditLecture)
 			mylectures.POST("/save", app.SaveLecture)
 			mylectures.Any("/delete", app.DeleteLecture)
+			mylectures.Any("/tickets/", app.LectureTickets)
 		}
 	}
 

@@ -45,6 +45,17 @@ type UserLectureTicket struct {
 	Ticket   Ticket
 }
 
+type TicketUser struct {
+	Ticket Ticket
+	User   User
+}
+
+// func FindTicketsByField(field string, value interface{}) []TicketUser {
+// 	sql:=GetDBRSession(nil).Select("t.*, u.id, u.password, u.email, u.fio, 0+u.roles as roles").
+// 	From(dbr.I("tickets").As("t")).
+// 	LeftJoin(dbr.I("users").As("u"),"t.user_id")
+// }
+
 // FindUserLectionTicketsByField - find tickets by userID and any one field
 func FindUserLectionTicketsByField(userID int, field string, value interface{}) (lectures []UserLectureTicket) {
 	var u User
@@ -52,11 +63,17 @@ func FindUserLectionTicketsByField(userID int, field string, value interface{}) 
 	var lo Location
 	var t Ticket
 
-	// Минимальное условие - по юзеру:
-	cond := dbr.Eq("tickets.user_id", userID)
+	var cond dbr.Builder
+	// по юзеру:
+	if userID > 0 {
+		cond = dbr.Eq("tickets.user_id", userID)
+	}
 
 	// если указано (непусто) field, значит - дополнительное по AND условие в WHERE:
 	if len(field) > 0 {
+		if cond == nil {
+			cond = dbr.Eq(field, value)
+		}
 		cond = dbr.And(cond, dbr.Eq(field, value))
 	}
 

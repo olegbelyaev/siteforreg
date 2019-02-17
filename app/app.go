@@ -48,6 +48,24 @@ func ShowListenerTickets(c *gin.Context) {
 	c.HTML(http.StatusOK, "show_listener_tickets.html", c.Keys)
 }
 
+// LectureTickets - отображение занятых мест на лекцию
+func LectureTickets(c *gin.Context) {
+	lectureIDStr := c.Query("lecture_id")
+	lectureID, err := strconv.Atoi(lectureIDStr)
+
+	if err != nil {
+		// если lecture_id - не число
+		mysession.AddWarningFlash(c, "lecture_id")
+		c.Redirect(http.StatusTemporaryRedirect, "/")
+		return
+	}
+
+	usersLecturesTickets := mydatabase.FindUserLectionTicketsByField(0, "lecture_id", lectureID)
+	// panic(fmt.Sprintf("%v", usersLecturesTickets))
+	c.Set("tickets", usersLecturesTickets)
+	c.HTML(http.StatusOK, "lecture_tickets.html", c.Keys)
+}
+
 // SetWarningMsg - установка сообщения, которое пробросится в шаблоны ключем "warning_msg"
 func SetWarningMsg(c *gin.Context, msg string) {
 	c.Set("warning_msg", msg)
