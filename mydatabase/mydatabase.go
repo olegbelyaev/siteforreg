@@ -9,11 +9,6 @@ import (
 	ifErr "github.com/olegbelyaev/siteforreg/errorwrapper"
 )
 
-// todo: ошибка too many connections!
-
-//Db -- pull of connections
-// var Db *sql.DB
-
 //Ctx -- we dont know
 var Ctx = context.Background()
 
@@ -56,33 +51,6 @@ type Lecture struct {
 	Name        string `form:"name" binding:"required"`
 	Description string `form:"description" binding:"required"`
 }
-
-// // GetDb - возвращает пул соединений с БД
-// // возможно выпилим (используй тогда GetDBRSession)
-// func GetDb() *sql.DB {
-// 	if Db == nil {
-// 		pass := os.Getenv("MYSQL_SECRET")
-// 		if len(pass) == 0 {
-// 			panic("MYSQL_SECRET is EMPTY! (set MYSQL_SECRET env var and run me again)")
-// 		}
-
-// 		db1, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(127.0.0.1:3306)/siteforeg", pass))
-// 		if err != nil {
-// 			panic("pool error:" + err.Error())
-// 		}
-// 		Db = db1
-// 	}
-// 	return Db
-// }
-
-// GetConn - возвращает соединение с бд пакета sql
-// Помни, что нужно делать defer conn.Close()
-// Возможно, выпилим и будем юзать только GetDBRSession
-// func GetConn() *sql.Conn {
-// 	conn, err := GetDb().Conn(Ctx)
-// 	ifErr.Panic("connection error", err)
-// 	return conn
-// }
 
 // DBRConn - соединение с БД получаемое через GetDBR()
 var DBRConn *dbr.Connection
