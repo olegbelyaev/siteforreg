@@ -206,7 +206,7 @@ func DeleteLecture(c *gin.Context) {
 		SetWarningMsg(c, "lecture_id!")
 		c.Redirect(http.StatusTemporaryRedirect, "/manage/lectures/?location_id="+locationID)
 	}
-	// todo: если на лекцию кто-то зарегистрирован, то что делать? рассылать уведомления?
+	// если на лекцию кто-то зарегистрирован, то что делать? рассылать уведомления?
 	// если билеты платные нужно деньги возвращать
 	// пока просто запрещаем непустую лекцию удалять
 
