@@ -7,7 +7,7 @@ create table IF NOT EXISTS locations (
     `address` varchar(255) not null default ""
     );
 
-
+-- todo: пользователю поле о согласии с правилами использования
 CREATE TABLE IF NOT EXISTS `users` (
     `id` int(11) NOT NULL AUTO_INCREMENT primary key , 
     `password` varchar(30) NOT NULL DEFAULT "", 
@@ -22,7 +22,7 @@ create table IF NOT EXISTS locorg (
     `organizer_id` int not null
     );
 
-
+-- поле "активно" 
 CREATE TABLE IF NOT EXISTS `lectures` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `location_id` int(11) NOT NULL DEFAULT 0,
