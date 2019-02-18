@@ -207,6 +207,17 @@ func DeleteLecture(c *gin.Context) {
 		c.Redirect(http.StatusTemporaryRedirect, "/manage/lectures/?location_id="+locationID)
 	}
 	// todo: если на лекцию кто-то зарегистрирован, то что делать? рассылать уведомления?
+	// если билеты платные нужно деньги возвращать
+	// пока просто запрещаем непустую лекцию удалять
+
+	// найти слушателей:
+	tickets := mydatabase.FindUserLectionTicketsByField(0, "lecture_id", lectureID)
+	if len(tickets) > 0 {
+		mysession.AddWarningFlash(c, "Чтоы удалить эту лекцию, удалите все билеты слушателей")
+		c.Redirect(http.StatusTemporaryRedirect, "/manage/lectures/tickets/?lecture_id="+lectureID)
+		return
+	}
+
 	mydatabase.DeleteLecture(lectureID)
 	c.Redirect(http.StatusTemporaryRedirect, "/manage/lectures/?location_id="+locationID)
 }
@@ -347,7 +358,7 @@ func DeleteLocation(c *gin.Context) {
 	if len(foundLocorgs) > 0 {
 		// если на ней есть организаторы
 		// сообщение пользователю и редирект на список организаторов этой площадки:
-		mysession.AddInfoFlash(c, "Чтобы удалить площадку, удалите всех организаторов с данной лощадки")
+		mysession.AddWarningFlash(c, "Чтобы удалить площадку, удалите всех организаторов с данной лощадки")
 		c.Redirect(http.StatusTemporaryRedirect, "/administrate/locorgs/?location_id="+locationIDStr)
 		return
 	}
