@@ -12,7 +12,6 @@ func DeleteLocation(ID int) error {
 	if ID <= 0 {
 		return fmt.Errorf("ID must be >0")
 	}
-	// todo: проверить отсутствие на ней организаторов, и если есть , удалить их из locorg
 	_, err := GetDBRSession(nil).DeleteFrom("locations").Where("id=?", ID).Exec()
 	return err
 }
