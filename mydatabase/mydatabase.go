@@ -26,6 +26,7 @@ type User struct {
 	Password string
 	Fio      string
 	Roles    int
+	ResetKey string
 }
 
 // UserRoleListener - слушательская составляющая поля roles таблицы users

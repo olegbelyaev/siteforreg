@@ -15,7 +15,7 @@ func FindUserByEmail(email string) (User, bool) {
 // FindUserByField - finds user by any one field
 func FindUserByField(field string, value interface{}) (User, bool) {
 	var u User
-	_, err := GetDBRSession(nil).Select("id, password, email, fio, 0+roles as roles").
+	_, err := GetDBRSession(nil).Select("id, password, email, fio, 0+roles as roles, reset_key").
 		From("users").Where(field+"=?", value).Load(&u)
 	ifErr.Panic("Error while find user", err)
 	return u, u.ID != 0 && err == nil
@@ -24,7 +24,7 @@ func FindUserByField(field string, value interface{}) (User, bool) {
 // FindUsersByIntRole - ищет юзеров по роли
 func FindUsersByIntRole(role int) []User {
 	var uu []User
-	_, err := GetDBRSession(nil).Select("id, password, email, fio, 0+roles as roles").
+	_, err := GetDBRSession(nil).Select("id, password, email, fio, 0+roles as roles, reset_key").
 		From("users").Where("roles<=?", role).Load(&uu)
 	ifErr.Panic("Error while find user", err)
 	return uu
@@ -78,7 +78,7 @@ func FindUserLectionTicketsByField(userID int, field string, value interface{}) 
 	}
 
 	sql := GetDBRSession(nil).
-		Select("u.id, u.password, u.email, u.fio, 0+u.roles as roles, tickets.*, lectures.*, locations.*").
+		Select("u.id, u.password, u.email, u.fio, 0+u.roles as roles, u.reset_key, tickets.*, lectures.*, locations.*").
 		From(dbr.I("users").As("u")).
 		LeftJoin("tickets", "u.id=tickets.user_id").
 		LeftJoin("lectures", "tickets.lecture_id=lectures.id").
@@ -121,7 +121,7 @@ func FindLocationsByField(field string, value interface{}) (locations []Location
 // FindUsersByField - ищет пользователей (field=""выбирает все записи)
 func FindUsersByField(field string, value interface{}) (users []User) {
 
-	sql := GetDBRSession(nil).Select("id, password, email, fio, 0+roles as roles").From("users")
+	sql := GetDBRSession(nil).Select("id, password, email, fio, 0+roles as roles, reset_key").From("users")
 	if len(field) > 0 {
 		sql = sql.Where(dbr.Eq(field, value))
 	}

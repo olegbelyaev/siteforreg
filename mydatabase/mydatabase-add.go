@@ -29,6 +29,7 @@ func AddUser(u User) (int64, error) {
 	res, err := GetDBRSession(nil).InsertInto("users").
 		Pair("id", u.ID).
 		Pair("password", u.Password).
+		Pair("reset_key", u.ResetKey).
 		Pair("email", u.Email).
 		Pair("fio", u.Fio).
 		Pair("roles", u.Roles).
@@ -79,6 +80,7 @@ func AddInitAdmin() {
 			Fio:      "admin-fio",
 			Roles:    4, //"admin",
 			Password: os.Getenv("ADMIN_SECRET"),
+			ResetKey: "", // reset_key для каждого случая использования перезаписывается
 		})
 		ifErr.Panic("can't create init admin", err)
 	}
