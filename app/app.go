@@ -475,16 +475,21 @@ func RegistrationEnd(c *gin.Context) {
 		Password: GenerateSecret(),
 		Fio:      c.PostForm("fio"),
 		Roles:    1,
+		ResetKey: "",
 	}
-	_, ok := mydatabase.FindUserByEmail(user.Email)
+
+	existingUser, ok := mydatabase.FindUserByEmail(user.Email)
 	if ok {
 		// Пользователь уже существует ( todo: добавить сброс пароля)
 		// генерим ключ сброса
-		reset_key := GenerateSecret() + GenerateSecret()
+		existingUser.ResetKey = GenerateSecret() + GenerateSecret() // два подряд, и три влезло бы
 		// сохраняем ключ в бд
-		mydatabase.UpdateUser()
+		mydatabase.UpdateUser(existingUser)
 		// отправляем ссылку на сброс
+		// todo:
+		// показываем сообщение
 		c.HTML(http.StatusOK, "email_exists.html", c.Keys)
+
 	} else {
 		// TODO придумать как защититься от многочисленной отправки
 		// пользователем писем по разным адресам
