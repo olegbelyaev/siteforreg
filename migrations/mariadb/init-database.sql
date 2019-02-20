@@ -11,6 +11,7 @@ create table IF NOT EXISTS locations (
 CREATE TABLE IF NOT EXISTS `users` (
     `id` int(11) NOT NULL AUTO_INCREMENT primary key , 
     `password` varchar(30) NOT NULL DEFAULT "", 
+    `reset_key` varchar(30) NOT NULL DEFAULT '',
     `email` varchar(100) NOT NULL DEFAULT "", 
     `fio` varchar(250)  NOT NULL DEFAULT "", 
     `roles` Set('listener','organizer','admin')
