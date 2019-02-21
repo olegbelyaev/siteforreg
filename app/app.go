@@ -106,6 +106,7 @@ func BuyTicket(c *gin.Context) {
 	c.Redirect(http.StatusTemporaryRedirect, "/")
 }
 
+// ReleaseListenerTicket - удаление билета(регистрации) пользователя на мероприятие
 func ReleaseListenerTicket(c *gin.Context) {
 	u := GetLoggedUserFromSession(c)
 	ticketIDStr := c.PostForm("ticket_id")
@@ -479,36 +480,48 @@ func RegistrationEnd(c *gin.Context) {
 	}
 
 	existingUser, ok := mydatabase.FindUserByEmail(user.Email)
+	siteAddress := "http://localhost:8081"
 	if ok {
+
 		// Пользователь уже существует ( todo: добавить сброс пароля)
 		// генерим ключ сброса
 		existingUser.ResetKey = GenerateSecret() + GenerateSecret() // два подряд, и три влезло бы
+
 		// сохраняем ключ в бд
 		mydatabase.UpdateUser(existingUser)
+
+		// сама ссылка на сброс:
+		resetLink := siteAddress + "/reset/password/" + existingUser.ResetKey
+
 		// отправляем ссылку на сброс
-		// todo:
+		emailText := fmt.Sprintf(
+			`Здравствуйте, %s !
+Вы запросили смену пароля на сайте %s .
+Перейдите по ссылке %s , 
+после чего новый пароль будет выслан на этот адрес
+			`, user.Fio, siteAddress, resetLink)
+
+		if sentOK := SendTextByEmail(c, emailText, user.Fio, user.Email, siteAddress); !sentOK {
+			mysession.AddInfoFlash(c, "Не получается отправить письмо со ссылкой.")
+			c.Redirect(http.StatusTemporaryRedirect, "/")
+		}
+
 		// показываем сообщение
 		c.HTML(http.StatusOK, "email_exists.html", c.Keys)
 
 	} else {
+
 		// TODO придумать как защититься от многочисленной отправки
 		// пользователем писем по разным адресам
-		siteAddress := "http://localhost:8081"
 		emailText := fmt.Sprintf(
 			`Здравствуйте, %s !
 Вы зарегистрировались на сайте %s .
 Ваш пароль: %s
 			`, user.Fio, siteAddress, user.Password)
 
-		sendErr := myemail.SendMailWithDefaultParams(
-			mail.Address{Name: user.Fio, Address: user.Email},
-			fmt.Sprintf("Регистрация на %s", siteAddress),
-			emailText,
-		)
-		if sendErr != nil {
-			c.Set("warning_msg", sendErr.Error())
-			ShowMainPage(c)
-			log.Print("Sending Error:" + sendErr.Error())
+		if sentOk := SendTextByEmail(c, emailText, user.Fio, user.Email, siteAddress); !sentOk {
+			mysession.AddInfoFlash(c, "Не получается отправить письмо.")
+			c.Redirect(http.StatusTemporaryRedirect, "/")
 		}
 
 		_, err := mydatabase.AddUser(user)
@@ -519,6 +532,53 @@ func RegistrationEnd(c *gin.Context) {
 		c.Redirect(http.StatusTemporaryRedirect, "/login")
 
 	}
+}
+
+// ResetPasswordLetter - пользователь перешел по ссылке для сброса пароля
+func ResetPasswordLetter(c *gin.Context) {
+	resetKey := c.Param("key")
+
+	// поиск пользователя с таким reset_key
+	user, found := mydatabase.FindUserByField("reset_key", resetKey)
+	if !found {
+		mysession.AddInfoFlash(c, "Ссылка недействительна")
+		c.Redirect(http.StatusTemporaryRedirect, "/")
+	}
+
+	// todo: сменить пароль в БД (пока отправляется старый)
+
+	siteAddress := "http://localhost:8081"
+
+	emailText := fmt.Sprintf(
+		`Здравствуйте, %s !
+Вы запросили смену пароля на сайте %s .
+Ваш пароль: %s
+		`, user.Fio, siteAddress, user.Password)
+
+	if sentOk := SendTextByEmail(c, emailText, user.Fio, user.Email, siteAddress); !sentOk {
+		mysession.AddInfoFlash(c, "Не получается отправить письмо.")
+		c.Redirect(http.StatusTemporaryRedirect, "/")
+		return
+	}
+	mysession.AddInfoFlash(c, "Посмотрите почту.")
+	c.Redirect(http.StatusTemporaryRedirect, "/")
+}
+
+// SendTextByEmail - отравка пароля пользователю
+func SendTextByEmail(c *gin.Context, emailText string, userFio string, userEmail string, siteAddress string) bool {
+
+	sendErr := myemail.SendMailWithDefaultParams(
+		mail.Address{Name: userFio, Address: userEmail},
+		fmt.Sprintf("Регистрация на %s", siteAddress),
+		emailText,
+	)
+	if sendErr != nil {
+		c.Set("warning_msg", sendErr.Error())
+		ShowMainPage(c)
+		log.Print("Sending Error:" + sendErr.Error())
+		return false
+	}
+	return true
 }
 
 // LoginEnd - обработка данных формы логина

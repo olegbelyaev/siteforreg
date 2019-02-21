@@ -114,7 +114,7 @@
 <!-- отображение предупреждающих сообщений (об ошибках пользователя)-->
 {{ if .warning_msg}}
 <div class="alert alert-warning" role="alert">
-    {{ .warning_msg }}
+    <h3><b> {{ .warning_msg }} </b></h3>
 </div>
 {{ end }}
 
@@ -128,14 +128,14 @@
 <!-- info-flash-сообщения -->
 {{ range .InfoFlashes }}
 <div class="alert alert-info" role="alert">
-    {{ . }}
+    <h3><b> {{ . }} </b></h3>
 </div>
 {{ end }}
 
 <!-- отображение сообщений информационного характера-->
 {{ if .info_msg}}
 <div class="alert alert-warning" role="alert">
-    {{ .info_msg }}
+    <h3><b> {{ .info_msg }} </b></h3> 
 </div>
 {{ end }}
 

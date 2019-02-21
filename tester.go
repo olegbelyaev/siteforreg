@@ -62,6 +62,8 @@ func main() {
 
 	router.POST("/registration/end", app.RegistrationEnd)
 
+	router.GET("/reset/password/:key", app.ResetPasswordLetter)
+
 	// td: как защититься от запросов не с этого сайта?
 	// зона администратора:
 	administrate := router.Group("/administrate")
