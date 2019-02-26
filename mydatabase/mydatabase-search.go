@@ -25,7 +25,7 @@ func FindUserByField(field string, value interface{}) (User, bool) {
 func FindUsersByIntRole(role int) []User {
 	var uu []User
 	_, err := GetDBRSession(nil).Select("id, password, email, fio, 0+roles as roles, reset_key").
-		From("users").Where("roles<=?", role).Load(&uu)
+		From("users").Where("roles>=?", role).Load(&uu)
 	ifErr.Panic("Error while find user", err)
 	return uu
 }
@@ -90,7 +90,7 @@ func FindUserLectionTicketsByField(userID int, field string, value interface{}) 
 	ifErr.Panic("error while find lections", err)
 
 	for rows.Next() {
-		err := rows.Scan(&u.ID, &u.Password, &u.Email, &u.Fio, &u.Roles,
+		err := rows.Scan(&u.ID, &u.Password, &u.Email, &u.Fio, &u.Roles, &u.ResetKey,
 			&t.ID, &t.UserID, &t.LectureID,
 			&le.ID, &le.LocationID, &le.When, &le.GroupName, &le.MaxSeets, &le.Name, &le.Description,
 			&lo.ID, &lo.Name, &lo.Address)
