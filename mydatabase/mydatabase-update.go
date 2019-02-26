@@ -4,7 +4,7 @@ import ifErr "github.com/olegbelyaev/siteforreg/errorwrapper"
 
 // UpdateUser - изменяет данные пользователя в БД
 func UpdateUser(u User) {
-	_, err := GetDBRSession(nil).Update("users").
+	_, err := GetDBRSession(nil).Update("users").Where("id", u.ID).
 		Set("password", u.Password).
 		Set("reset_key", u.ResetKey).
 		Set("email", u.Email).
