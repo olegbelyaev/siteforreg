@@ -43,6 +43,11 @@ func main() {
 
 	router.Any("/", app.ShowMainPage)
 
+	// test
+	router.Any("/w", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "vuefy.html", c.Keys)
+	})
+
 	router.Any("/login", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "login.html", c.Keys)
 	})

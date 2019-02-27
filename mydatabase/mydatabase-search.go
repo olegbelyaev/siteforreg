@@ -185,8 +185,9 @@ func FindLecturesByField(field string, value interface{}) (lectures []Lecture) {
 
 // LectureLocation - type with Lecture and his Location inside
 type LectureLocation struct {
-	Lecture  Lecture
-	Location Location
+	Lecture   Lecture
+	Location  Location
+	FreeSeets int
 }
 
 // FindLecturesLocationsByField - finds lestures with locations
@@ -194,9 +195,15 @@ func FindLecturesLocationsByField(field string, value interface{}) (lectures []L
 
 	var le Lecture
 	var lo Location
+	var freeSeets int
 
-	sql := GetDBRSession(nil).Select("*").From("lectures").
-		LeftJoin("locations", "lectures.location_id=locations.id")
+	sql := GetDBRSession(nil).
+		Select(`lectures.*, locations.*, 
+			IF( isnull(tickets.id), lectures.max_seets, lectures.max_seets-count(*)) as free_seets`).
+		From("lectures").
+		LeftJoin("locations", "lectures.location_id=locations.id").
+		LeftJoin("tickets", "tickets.lecture_id=lectures.id").
+		GroupBy("lectures.id")
 
 	if len(field) > 0 {
 		sql = sql.Where("lecture."+field+"=?", value)
@@ -207,9 +214,9 @@ func FindLecturesLocationsByField(field string, value interface{}) (lectures []L
 
 	for rows.Next() {
 		err := rows.Scan(&le.ID, &le.LocationID, &le.When, &le.GroupName, &le.MaxSeets, &le.Name, &le.Description,
-			&lo.ID, &lo.Name, &lo.Address)
+			&lo.ID, &lo.Name, &lo.Address, &freeSeets)
 		ifErr.Panic("scan error", err)
-		lectures = append(lectures, LectureLocation{Lecture: le, Location: lo})
+		lectures = append(lectures, LectureLocation{Lecture: le, Location: lo, FreeSeets: freeSeets})
 	}
 	return lectures
 }

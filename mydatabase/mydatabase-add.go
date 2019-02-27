@@ -101,8 +101,19 @@ func AddLecture(l Lecture) {
 
 // BuyTicket - user buy ticket for lecture
 func BuyTicket(userID int, lectureID int) (ok bool) {
+	if userID == 0 {
+		return false
+	}
+	// проверим что места еще остались:
+	var freeSeets int
+	err := GetDBRSession(nil).Select("lectures.max_seets - count(*)").From("tickets").
+		Join("lectures", "tickets.lecture_id=lectures.id").Where("lecture_id=?", lectureID).LoadOne(&freeSeets)
 
-	_, err := GetDBRSession(nil).InsertInto("tickets").
+	if freeSeets <= 0 {
+		return false
+	}
+
+	_, err = GetDBRSession(nil).InsertInto("tickets").
 		Pair("user_id", userID).
 		Pair("lecture_id", lectureID).
 		Exec()

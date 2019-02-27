@@ -87,6 +87,9 @@ func ShowAllLectures(c *gin.Context) {
 // BuyTicket - покупка пользователем билета на лекцию
 func BuyTicket(c *gin.Context) {
 	u := GetLoggedUserFromSession(c)
+	if !u.IsLogged {
+		c.Redirect(http.StatusTemporaryRedirect, "/")
+	}
 	lectureIDstr := c.Query("lecture_id")
 	lectureID, err := strconv.Atoi(lectureIDstr)
 	ifErr.Panic("lecture_id:", err)
@@ -101,7 +104,7 @@ func BuyTicket(c *gin.Context) {
 
 	ok := mydatabase.BuyTicket(u.User.ID, lectureID)
 	if !ok {
-		SetWarningMsg(c, "ошибка, что-то пошло не так")
+		mysession.AddWarningFlash(c, "Что-то пошло не так, возможно, все места уже заняты.")
 	}
 	c.Redirect(http.StatusTemporaryRedirect, "/")
 }
@@ -447,6 +450,7 @@ func GotoLoginIfNotLogged(c *gin.Context) {
 	if !u.(LoggedUser).IsLogged {
 		c.Redirect(http.StatusTemporaryRedirect, "/login")
 	}
+	// c.Abort()
 }
 
 // GotoAccessDeniedIfNotAdmin - проверяет уровень юзера >=4

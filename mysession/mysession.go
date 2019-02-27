@@ -55,6 +55,7 @@ func GetStringValue(c *gin.Context, key string) (string, bool) {
 }
 
 // AddWarningFlash - добавить warning-флеш-сообщение пользователю
+// после нее можно делать redirect
 func AddWarningFlash(c *gin.Context, msg string) {
 	sess, _ := GetSession(c)
 	sess.AddFlash("WARNING:" + msg)
@@ -62,6 +63,7 @@ func AddWarningFlash(c *gin.Context, msg string) {
 }
 
 // AddInfoFlash - добавить info-флеш-сообщение пользователю
+// после нее можно делать redirect
 func AddInfoFlash(c *gin.Context, msg string) {
 	sess, _ := GetSession(c)
 	sess.AddFlash("INFO:" + msg)
