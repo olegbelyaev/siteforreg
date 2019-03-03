@@ -1,16 +1,23 @@
 package mydatabase
 
-import ifErr "github.com/olegbelyaev/siteforreg/errorwrapper"
+import (
+	ifErr "github.com/olegbelyaev/siteforreg/errorwrapper"
+)
 
 // UpdateUser - изменяет данные пользователя в БД
 func UpdateUser(u User) {
-	_, err := GetDBRSession(nil).Update("users").Where("id", u.ID).
+
+	stmt := GetDBRSession(nil).Update("users").
 		Set("password", u.Password).
 		Set("reset_key", u.ResetKey).
 		Set("email", u.Email).
 		Set("fio", u.Fio).
 		Set("roles", u.Roles).
-		Exec()
+		Where("id=?", u.ID)
+
+	// panic(fmt.Sprintf("%v", stmt.Query))
+
+	_, err := stmt.Exec()
 
 	ifErr.Panic("can't update user", err)
 }
