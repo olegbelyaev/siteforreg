@@ -539,6 +539,7 @@ func RegistrationEnd(c *gin.Context) {
 }
 
 // ResetPasswordLetter - пользователь перешел по ссылке для сброса пароля
+// Меняет пароль в БД на новый и высылает на почту
 func ResetPasswordLetter(c *gin.Context) {
 	resetKey := c.Param("key")
 
@@ -549,7 +550,9 @@ func ResetPasswordLetter(c *gin.Context) {
 		c.Redirect(http.StatusTemporaryRedirect, "/")
 	}
 
-	// todo: сменить пароль в БД (пока отправляется старый)
+	user.Password = GenerateSecret()
+
+	mydatabase.UpdateUser(user)
 
 	siteAddress := "http://localhost:8081"
 
