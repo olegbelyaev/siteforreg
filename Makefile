@@ -107,9 +107,7 @@ siteforreg-run:
 	# запуск сервера siteforreg от юзера на юзерском порту в консоли с выводом на косоль
 
 
-# webhook теперь не придется от рута делать, придется это изменить (sudo убрать и вызывать не-sudo-запуск сайта):
-sudo-webhook-server-run:
-	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
+webhook-server-run:
 	if [ -r webhook_secret.txt ]; then \
 		WEBHOOK_SECRET=`cat webhook_secret.txt`; \
 	else \
@@ -123,14 +121,11 @@ sudo-webhook-server-run:
 	# запускает сервер, ожидающий запросов на отдельный порт, реагирующий на веб-хуки
 
 
-sudo-webhook-server-fork-run:
-	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
-	./fork.pl -pf=webhook-server.pid --single "make sudo-webhook-server-run" >> webhook-server.log  2>&1 ;\
-	# от рута: запуск сервера webhook через форк
+webhook-server-fork-run:
+	./fork.pl -pf=webhook-server.pid --single "make webhook-server-run" >> webhook-server.log  2>&1 ;\
 
 
-sudo-webhook-server-fork-kill:
-	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
+webhook-server-fork-kill:
 	./fork.pl -pf=webhook-server.pid --kila
 
 
