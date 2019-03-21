@@ -1,3 +1,4 @@
+# теперь можно все переводить на docker-compose: sudo не нужно
 SHELL := /bin/bash
 
 mariadb-run:
@@ -77,37 +78,37 @@ arango-import:
 	echo "see `pwd`/arangodb_data/import/"
 
 
-sudo-siteforreg-fork-run:
-	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
-	./fork.pl -pf=siteforreg.pid --single "make sudo-siteforreg-run" >> siteforrreg.log  2>&1 ;\
-	# от рута: запуск сервера siteforreg через форк
+#sudo-siteforreg-fork-run:
+#	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
+#	./fork.pl -pf=siteforreg.pid --single "make sudo-siteforreg-run" >> siteforrreg.log  2>&1 ;\
+#	# от рута: запуск сервера siteforreg через форк
 
 
-sudo-siteforreg-fork-kill:
-	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
-	./fork.pl -pf=siteforreg.pid --kila >> siteforreg.log  2>&1 ;\
-	# от рута: остановка процесса сервера siteforreg через форк
+#sudo-siteforreg-fork-kill:
+#	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
+#	./fork.pl -pf=siteforreg.pid --kila >> siteforreg.log  2>&1 ;\
+#	# от рута: остановка процесса сервера siteforreg через форк
 
 
 git-pull:
 	sudo -u dima git pull ;\
 	# перевод [рута] на пользователя и стягивание из гита
 
+# переделать на несудо
+#sudo-siteforreg-fork-release:
+#	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
+#	make sudo-siteforreg-fork-kill && make git-pull && make sudo-siteforreg-fork-run ;\
+#	# от рута: остановка сервера через форк, от юзера стягивание из гита обновлений и от рута запуск через форк (не трогает mariadb)
 
-sudo-siteforreg-fork-release:
-	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
-	make sudo-siteforreg-fork-kill && make git-pull && make sudo-siteforreg-fork-run ;\
-	# от рута: остановка сервера через форк, от юзера стягивание из гита обновлений и от рута запуск через форк (не трогает mariadb)
 
-
-sudo-siteforreg-run:
-	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
-	source ./shell-scripts/export-siteforreg-vars.sh; \
-	export PATH="${HOME}/bin:${HOME}/.local/bin:${PATH}:/home/dima/bin/go/bin"; \
-	export GOPATH=/home/dima/go; \
-	export PORT=80; \
-	go run tester.go ;\
-	# запуск сервера siteforreg от рута на порту 80
+#sudo-siteforreg-run:
+#	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
+#	source ./shell-scripts/export-siteforreg-vars.sh; \
+#	export PATH="${HOME}/bin:${HOME}/.local/bin:${PATH}:/home/dima/bin/go/bin"; \
+#	export GOPATH=/home/dima/go; \
+#	export PORT=80; \
+#	go run tester.go ;\
+#	# запуск сервера siteforreg от рута на порту 80
 
 
 siteforreg-run:
@@ -117,6 +118,7 @@ siteforreg-run:
 	# запуск сервера siteforreg от юзера на юзерском порту в консоли с выводом на косоль
 
 
+# webhook теперь не придется от рута делать, придется это изменить (sudo убрать и вызывать не-sudo-запуск сайта):
 sudo-webhook-server-run:
 	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
 	if [ -r webhook_secret.txt ]; then \
@@ -146,5 +148,6 @@ sudo-webhook-server-fork-kill:
 echo-ok:
 	echo "test-ok"; \
 	тестовый рецепт
+
 
 
