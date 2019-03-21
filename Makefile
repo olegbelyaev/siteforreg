@@ -1,4 +1,3 @@
-# теперь можно все переводить на docker-compose: sudo не нужно
 SHELL := /bin/bash
 
 mariadb-run:
@@ -90,14 +89,10 @@ siteforreg-fork-kill:
 
 
 git-pull:
-	sudo -u dima git pull ;\
-	# перевод [рута] на пользователя и стягивание из гита
+	git pull ;\
 
-# переделать на несудо
-#sudo-siteforreg-fork-release:
-#	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
-#	make sudo-siteforreg-fork-kill && make git-pull && make sudo-siteforreg-fork-run ;\
-#	# от рута: остановка сервера через форк, от юзера стягивание из гита обновлений и от рута запуск через форк (не трогает mariadb)
+siteforreg-fork-release:
+	make siteforreg-fork-kill && make git-pull && make siteforreg-fork-run ;\
 
 
 siteforreg-run:
