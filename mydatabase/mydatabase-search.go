@@ -191,7 +191,7 @@ type LectureLocation struct {
 }
 
 // FindLecturesLocationsByField - finds lestures with locations
-func FindLecturesLocationsByField(field string, value interface{}) (lectures []LectureLocation) {
+func FindLecturesLocationsByField(field string, value interface{}, pastLectures bool) (lectures []LectureLocation) {
 
 	var le Lecture
 	var lo Location
@@ -203,10 +203,15 @@ func FindLecturesLocationsByField(field string, value interface{}) (lectures []L
 		From("lectures").
 		LeftJoin("locations", "lectures.location_id=locations.id").
 		LeftJoin("tickets", "tickets.lecture_id=lectures.id").
-		GroupBy("lectures.id")
+		GroupBy("lectures.id").
+		OrderDesc("lectures.when")
 
 	if len(field) > 0 {
 		sql = sql.Where("lecture."+field+"=?", value)
+	}
+
+	if !pastLectures {
+		sql = sql.Where("lectures.`when` > now()")
 	}
 
 	rows, err := sql.Rows()

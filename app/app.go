@@ -21,7 +21,7 @@ func ShowMainPage(c *gin.Context) {
 	loggedUser := GetLoggedUserFromSession(c)
 	log.Printf("%v", loggedUser)
 
-	leclocs := mydatabase.FindLecturesLocationsByField("", "")
+	leclocs := mydatabase.FindLecturesLocationsByField("", "", false)
 	c.Set("leclocs", leclocs)
 
 	if loggedUser.IsLogged {
@@ -79,7 +79,7 @@ func ShowUsers(c *gin.Context) {
 
 // ShowAllLectures - shows all lectures
 func ShowAllLectures(c *gin.Context) {
-	leclocs := mydatabase.FindLecturesLocationsByField("", "")
+	leclocs := mydatabase.FindLecturesLocationsByField("", "", false)
 	c.Set("leclocs", leclocs)
 	c.HTML(http.StatusOK, "show_all_lectures.html", c.Keys)
 }
