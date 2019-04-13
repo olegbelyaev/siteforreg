@@ -7,6 +7,8 @@
     <h1 class="display-4">{{ .Lecture.Name }}</h1>
     <p class="lead">{{ .Lecture.Description }}</p>
     <hr class="my-4">
+    <p>{{ .Lecture.When }}</p>
+    <p>{{ .Location.Name }} {{ .Location.Address }}</p>
     <p>
         {{ if gt .FreeSeets 0 }}
         Мест: {{ .FreeSeets }}
@@ -17,7 +19,6 @@
             Все места заняты
         {{ end }}
     </p>
-    <p>{{ .Location.Name }} {{ .Location.Address }}</p>
 </div>
 
 {{ end }}
@@ -25,12 +26,3 @@
 {{ end }}
 
 
-{{ define "landing" }}
-
-<div class="jumbotron">
-    <h1 class="display-4">Хочешь попасть на интересную лекцию?</h1>
-    <p class="lead">На этом сайте можно создать мероприятие или зарегистрироваться на существующее.</p>
-</div>
-
-
-{{ end }}
