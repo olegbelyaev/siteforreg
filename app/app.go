@@ -484,7 +484,7 @@ func RegistrationEnd(c *gin.Context) {
 	}
 
 	existingUser, ok := mydatabase.FindUserByEmail(user.Email)
-	siteAddress := "http://localhost:8081"
+	siteAddress := "http://meetfor.ru"
 	if ok {
 
 		// Пользователь уже существует ( todo: добавить сброс пароля)
