@@ -41,6 +41,7 @@ func SaveLecture(l Lecture) {
 		Set("max_seets", l.MaxSeets).
 		Set("name", l.Name).
 		Set("description", l.Description).
+		Where("id=?", l.ID).
 		Exec()
 	ifErr.Panic("can't update lectures", err)
 }
