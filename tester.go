@@ -110,6 +110,11 @@ func main() {
 			locorgs.Any("/add_locorg", app.AddLocOrg)
 			locorgs.Any("/delete", app.DeleteLocorg)
 		}
+
+		tickets := administrate.Group("/tickets")
+		{
+			tickets.Any("/forcerelease", app.ForceReleaseListenerTicket)
+		}
 	}
 
 	manage := router.Group("/manage")
@@ -142,6 +147,7 @@ func main() {
 			mylectures.POST("/save", app.SaveLecture)
 			mylectures.Any("/delete", app.DeleteLecture)
 			mylectures.Any("/tickets/", app.LectureTickets)
+
 		}
 	}
 

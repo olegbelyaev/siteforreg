@@ -122,6 +122,22 @@ func ReleaseListenerTicket(c *gin.Context) {
 	c.Redirect(http.StatusTemporaryRedirect, "/")
 }
 
+// ForceReleaseListenerTicket - удаление билета(регистрации) пользователя на мероприятие админом
+func ForceReleaseListenerTicket(c *gin.Context) {
+	userIDStr := c.PostForm("user_id")
+	println("==============" + userIDStr)
+	userID, err := strconv.Atoi(userIDStr)
+	ifErr.Panic("can't convert user_id to int", err)
+	ticketIDStr := c.PostForm("ticket_id")
+	ticketID, err := strconv.Atoi(ticketIDStr)
+	ifErr.Panic("can't convert ticket_id to int", err)
+	ok := mydatabase.ReleaseTicket(ticketID, userID)
+	if !ok {
+		SetWarningMsg(c, "Что-то пошло не так")
+	}
+	c.Redirect(http.StatusTemporaryRedirect, "/manage/lectures/tickets/?lecture_id="+c.PostForm("lecture_id"))
+}
+
 // GetUserFromSession - достает объект User из сессии
 func GetUserFromSession(c *gin.Context) (mydatabase.User, bool) {
 	var user mydatabase.User
