@@ -204,7 +204,7 @@ func FindLecturesLocationsByField(field string, value interface{}, pastLectures 
 		LeftJoin("locations", "lectures.location_id=locations.id").
 		LeftJoin("tickets", "tickets.lecture_id=lectures.id").
 		GroupBy("lectures.id").
-		OrderBy("lectures.group_name").
+		OrderBy("CAST(lectures.group_name as UNSIGNED)").
 		OrderDesc("lectures.when")
 
 	if len(field) > 0 {
