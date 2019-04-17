@@ -39,6 +39,8 @@ func main() {
 		c.Set("InfoFlashes", infoFlashes)
 	})
 
+	router.Static("/files", "./files")
+
 	// ======================== главная / регистрация / логин / выход =====================
 
 	router.Any("/", app.ShowMainPage)
