@@ -567,6 +567,7 @@ func ResetPasswordLetter(c *gin.Context) {
 	}
 
 	user.Password = GenerateSecret()
+	user.ResetKey = ""
 
 	mydatabase.UpdateUser(user)
 
