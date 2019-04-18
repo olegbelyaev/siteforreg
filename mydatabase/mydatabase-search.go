@@ -226,3 +226,20 @@ func FindLecturesLocationsByField(field string, value interface{}, pastLectures 
 	}
 	return lectures
 }
+
+// FindUsersToResetPassword - временная для поиска кто не смог получить пароль по почте
+func FindUsersToResetPassword() (users []User) {
+
+	sql := GetDBRSession(nil).Select("id,email,password,fio,0+roles as roles,reset_key").From("users").Where("reset_key!=''")
+	rows, err := sql.Rows()
+	ifErr.Panic("Can't get rows from ", err)
+
+	var u User
+	for rows.Next() {
+		if err := rows.Scan(&u.ID, &u.Email, &u.Password, &u.Fio, &u.Roles, &u.ResetKey); err != nil {
+			panic("Scan error:" + err.Error())
+		}
+		users = append(users, u)
+	}
+	return
+}
