@@ -571,7 +571,7 @@ func ResetPasswordLetter(c *gin.Context) {
 
 	mydatabase.UpdateUser(user)
 
-	siteAddress := "http://localhost:8081"
+	siteAddress := "http://meetfor.ru"
 
 	emailText := fmt.Sprintf(
 		`Здравствуйте, %s !

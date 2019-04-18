@@ -22,9 +22,9 @@ func main() {
 
 	// конфигурация для отправки почты:
 	myemail.SetParams(
-		"", "sivsite@yandex.ru", os.Getenv("EMAIL_SECRET"),
-		"smtp.yandex.ru", "465",
-		mail.Address{Name: "MeetFor", Address: "sivsite@yandex.ru"},
+		"", "meetfor_site@mail.ru", os.Getenv("EMAIL_SECRET"),
+		"smtp.mail.ru", "465",
+		mail.Address{Name: "MeetFor", Address: "meetfor_site@mail.ru"},
 		true,
 	)
 
