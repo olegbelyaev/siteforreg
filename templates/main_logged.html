@@ -1,16 +1,15 @@
 {{ template "_start_html" . }}
+<!-- . - c.Keys -->
 
 <body>
 
     {{ template "_navbar_main" . }}
 
+    {{ template "logo" }}
+
     {{ template "all_lectures" . }}
 
-    {{ template "_bootstrap" . }}
-    <style type="text/css">
-        .jumbotron{ 
-            background-color: #cde9fd;
-        }
-    </style>
+
+    {{template "_bootstrap" . }}
 </body>
 {{template "_end_html" . }}

@@ -1,0 +1,28 @@
+{{ define "lecture_tickets" }}
+
+{{ range $i, $ticket := .tickets }}
+
+
+<div>
+    <div class="row text-center">
+        <!-- <div class="col">{{ .Ticket.ID }}</div> -->
+        <div class="col">{{ .Lecture.Name }}</div>
+        <div class="col">{{ .Lecture.When }}</div>
+        <div class="col">{{ .User.Fio }}</div>
+        <div class="col">{{ .User.Email }}</div>
+
+        <div class="col">
+
+            <form method="post" action="/administrate/tickets/forcerelease">
+                <input id="lecture_id" name="lecture_id" type="hidden" value="{{ .Lecture.ID }}">
+                <input id="user_id" name="user_id" type="hidden" value="{{ .User.ID }}">
+                <input id="ticket_id" name="ticket_id" type="hidden" value="{{ .Ticket.ID }}">
+                <button type="submit" class="btn btn-danger">Удалить!</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{ end }}
+
+{{ end }}

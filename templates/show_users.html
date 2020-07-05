@@ -12,7 +12,7 @@
                 <th>ID</th>
                 <th>Fio</th>
                 <th>Email</th>
-                <th>RoleID</th>
+                <th>Roles</th>
                 <th>Площадки</th>
             </tr>
         </thead>
@@ -22,7 +22,7 @@
                 <td scope="row">{{ .ID }}</td>
                 <td>{{ .Fio }}</td>
                 <td>{{ .Email }}</td>
-                <td>{{ .RoleID }}</td>
+                <td>{{ .Roles }}</td>
                 <td><a href="/administrate/locorgs?user_id={{ .ID }}" role="button" class="btn btn-secondary">Площадки</a></td>
 
             </tr>

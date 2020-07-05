@@ -77,37 +77,22 @@ arango-import:
 	echo "see `pwd`/arangodb_data/import/"
 
 
-sudo-siteforreg-fork-run:
-	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
-	./fork.pl -pf=siteforreg.pid --single "make sudo-siteforreg-run" >> siteforrreg.log  2>&1 ;\
-	# от рута: запуск сервера siteforreg через форк
+
+siteforreg-fork-run:
+	./fork.pl -pf=siteforreg.pid --single "make siteforreg-run" >> siteforrreg.log  2>&1 ;\
+	# запуск сервера siteforreg через форк
 
 
-sudo-siteforreg-fork-kill:
-	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
+siteforreg-fork-kill:
 	./fork.pl -pf=siteforreg.pid --kila >> siteforreg.log  2>&1 ;\
 	# от рута: остановка процесса сервера siteforreg через форк
 
 
 git-pull:
-	sudo -u dima git pull ;\
-	# перевод [рута] на пользователя и стягивание из гита
+	git pull ;\
 
-
-sudo-siteforreg-fork-release:
-	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
-	make sudo-siteforreg-fork-kill && make git-pull && make sudo-siteforreg-fork-run ;\
-	# от рута: остановка сервера через форк, от юзера стягивание из гита обновлений и от рута запуск через форк (не трогает mariadb)
-
-
-sudo-siteforreg-run:
-	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
-	source ./shell-scripts/export-siteforreg-vars.sh; \
-	export PATH="${HOME}/bin:${HOME}/.local/bin:${PATH}:/home/dima/bin/go/bin"; \
-	export GOPATH=/home/dima/go; \
-	export PORT=80; \
-	go run tester.go ;\
-	# запуск сервера siteforreg от рута на порту 80
+siteforreg-fork-release:
+	make siteforreg-fork-kill && make git-pull && make siteforreg-fork-run ;\
 
 
 siteforreg-run:
@@ -117,8 +102,7 @@ siteforreg-run:
 	# запуск сервера siteforreg от юзера на юзерском порту в консоли с выводом на косоль
 
 
-sudo-webhook-server-run:
-	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
+webhook-server-run:
 	if [ -r webhook_secret.txt ]; then \
 		WEBHOOK_SECRET=`cat webhook_secret.txt`; \
 	else \
@@ -132,19 +116,17 @@ sudo-webhook-server-run:
 	# запускает сервер, ожидающий запросов на отдельный порт, реагирующий на веб-хуки
 
 
-sudo-webhook-server-fork-run:
-	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
-	./fork.pl -pf=webhook-server.pid --single "make sudo-webhook-server-run" >> webhook-server.log  2>&1 ;\
-	# от рута: запуск сервера webhook через форк
+webhook-server-fork-run:
+	./fork.pl -pf=webhook-server.pid --single "make webhook-server-run" >> webhook-server.log  2>&1 ;\
 
 
-sudo-webhook-server-fork-kill:
-	[[ ${USER} != "root" ]] && echo 'this command should be run with sudo' && exit; \
+webhook-server-fork-kill:
 	./fork.pl -pf=webhook-server.pid --kila
 
 
 echo-ok:
 	echo "test-ok"; \
 	тестовый рецепт
+
 
 

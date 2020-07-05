@@ -59,7 +59,6 @@ func SetParams(identiti, username, password, host, port string, from mail.Addres
 func SendMailWithDefaultParams(to mail.Address, subj string, body string) error {
 	serverAddress := fmt.Sprintf("%s:%s", Host, Port)
 
-	// TODO: есть ли готовые модули для установки хеадеров и боди?
 	headers := make(map[string]string)
 	headers["From"] = From.String()
 	headers["To"] = to.String()

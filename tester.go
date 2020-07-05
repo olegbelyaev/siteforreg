@@ -19,13 +19,12 @@ func main() {
 
 	// добавление суперадмина
 	mydatabase.AddInitAdmin()
-	mydatabase.AddInitRoles()
 
 	// конфигурация для отправки почты:
 	myemail.SetParams(
-		"", "sivsite@yandex.ru", os.Getenv("EMAIL_SECRET"),
-		"smtp.yandex.ru", "465",
-		mail.Address{Name: "MeetFor", Address: "sivsite@yandex.ru"},
+		"", "meetfor_site@mail.ru", os.Getenv("EMAIL_SECRET"),
+		"smtp.mail.ru", "465",
+		mail.Address{Name: "MeetFor", Address: "meetfor_site@mail.ru"},
 		true,
 	)
 
@@ -40,9 +39,16 @@ func main() {
 		c.Set("InfoFlashes", infoFlashes)
 	})
 
+	router.Static("/files", "./files")
+
 	// ======================== главная / регистрация / логин / выход =====================
 
 	router.Any("/", app.ShowMainPage)
+
+	// test
+	router.Any("/w", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "vuefy.html", c.Keys)
+	})
 
 	router.Any("/login", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "login.html", c.Keys)
@@ -62,6 +68,8 @@ func main() {
 	})
 
 	router.POST("/registration/end", app.RegistrationEnd)
+
+	router.GET("/reset/password/:key", app.ResetPasswordLetter)
 
 	// td: как защититься от запросов не с этого сайта?
 	// зона администратора:
@@ -104,6 +112,11 @@ func main() {
 			locorgs.Any("/add_locorg", app.AddLocOrg)
 			locorgs.Any("/delete", app.DeleteLocorg)
 		}
+
+		tickets := administrate.Group("/tickets")
+		{
+			tickets.Any("/forcerelease", app.ForceReleaseListenerTicket)
+		}
 	}
 
 	manage := router.Group("/manage")
@@ -119,8 +132,7 @@ func main() {
 
 		mylectures := manage.Group("/lectures")
 		{
-			mylectures.Any("/", app.ShowMyLectures)
-
+			mylectures.Any("/", app.LecturesOnLocation)
 			mylectures.Any("/new", func(c *gin.Context) {
 				LocationID := c.Query("location_id")
 				if len("location_id") == 0 {
@@ -136,12 +148,25 @@ func main() {
 			mylectures.Any("edit", app.EditLecture)
 			mylectures.POST("/save", app.SaveLecture)
 			mylectures.Any("/delete", app.DeleteLecture)
+			mylectures.Any("/tickets/", app.LectureTickets)
+
 		}
 	}
 
-	listener := router.Group("/listener")
+	router.Any("/all_lectures", app.ShowAllLectures)
+
+	my := router.Group("/my")
 	{
-		listener.Any("all_lectures", app.ShowAllLectures)
+		my.Use(app.GotoLoginIfNotLogged)
+
+		tickets := my.Group("/tickets")
+		{
+
+			tickets.Any("/buy", app.BuyTicket)
+			tickets.Any("/", app.ShowListenerTickets)
+			tickets.POST("release", app.ReleaseListenerTicket)
+
+		}
 	}
 
 	// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> запуск! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<

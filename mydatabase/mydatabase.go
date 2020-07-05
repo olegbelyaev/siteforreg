@@ -2,16 +2,12 @@ package mydatabase
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"os"
 
 	"github.com/gocraft/dbr"
 	ifErr "github.com/olegbelyaev/siteforreg/errorwrapper"
 )
-
-//Db -- pull of connections
-var Db *sql.DB
 
 //Ctx -- we dont know
 var Ctx = context.Background()
@@ -29,8 +25,18 @@ type User struct {
 	Email    string
 	Password string
 	Fio      string
-	RoleID   int
+	Roles    int
+	ResetKey string
 }
+
+// UserRoleListener - слушательская составляющая поля roles таблицы users
+const UserRoleListener = 1
+
+// UserRoleOrganizer - организаторская составляющая поля roles таблицы users
+const UserRoleOrganizer = 2
+
+// UserRoleAdmin - админская составляющая поля roles таблицы users
+const UserRoleAdmin = 4
 
 // LocOrg - represent Locations binded with Organizers
 type LocOrg struct {
@@ -54,33 +60,6 @@ type Lecture struct {
 	MaxSeets    int    `form:"max_seets" binding:"required"`
 	Name        string `form:"name" binding:"required"`
 	Description string `form:"description" binding:"required"`
-}
-
-// GetDb - возвращает пул соединений с БД
-// возможно выпилим (используй тогда GetDBRSession)
-func GetDb() *sql.DB {
-	if Db == nil {
-		pass := os.Getenv("MYSQL_SECRET")
-		if len(pass) == 0 {
-			panic("MYSQL_SECRET is EMPTY! (set MYSQL_SECRET env var and run me again)")
-		}
-
-		db1, err := sql.Open("mysql", fmt.Sprintf("root:%s@tcp(127.0.0.1:3306)/siteforeg", pass))
-		if err != nil {
-			panic("pool error:" + err.Error())
-		}
-		Db = db1
-	}
-	return Db
-}
-
-// GetConn - возвращает соединение с бд пакета sql
-// Помни, что нужно делать defer conn.Close()
-// Возможно, выпилим и будем юзать только GetDBRSession
-func GetConn() *sql.Conn {
-	conn, err := GetDb().Conn(Ctx)
-	ifErr.Panic("connection error", err)
-	return conn
 }
 
 // DBRConn - соединение с БД получаемое через GetDBR()

@@ -2,6 +2,8 @@ package mydatabase
 
 import (
 	"os"
+	"strconv"
+
 	ifErr "github.com/olegbelyaev/siteforreg/errorwrapper"
 )
 
@@ -12,115 +14,110 @@ func No() string {
 
 // AddLocation -- add location to mydatabase
 func AddLocation(l Location) {
-	conn := GetConn()
-	defer conn.Close()
-	conn.ExecContext(Ctx,
-		"INSERT INTO locations (name,address) values(?,?)",
-		l.Name, l.Address)
+
+	_, err := GetDBRSession(nil).
+		InsertInto("locations").
+		Columns("name", "address").
+		Values(l.Name, l.Address).
+		Exec()
+
+	ifErr.Panic("Can't insert location", err)
 }
 
 // AddUser -- add new user to mydatabase
 func AddUser(u User) (int64, error) {
-	conn := GetConn()
-	defer conn.Close()
-	result, err := conn.ExecContext(Ctx,
-		`INSERT INTO users (id, password, email, fio, role_id)
-		values(?,?,?,?,?)`,
-		u.ID, u.Password, u.Email, u.Fio, u.RoleID)
+	res, err := GetDBRSession(nil).InsertInto("users").
+		Pair("id", u.ID).
+		Pair("password", u.Password).
+		Pair("reset_key", u.ResetKey).
+		Pair("email", u.Email).
+		Pair("fio", u.Fio).
+		Pair("roles", u.Roles).
+		Exec()
+
 	if err != nil {
 		return 0, err
 	}
-	id, err := result.LastInsertId()
+	id, err := res.LastInsertId()
 	return id, err
 }
 
-// AddLocOrg - добавляет связ площадки и организатора в БД
+// AddLocOrg - добавляет связь площадки и организатора в БД
 func AddLocOrg(locationID int, organiserID int) {
-	conn := GetConn()
-	defer conn.Close()
-	conn.ExecContext(Ctx,
-		`INSERT INTO locorg (location_id, organizer_id)
-	VALUES (?,?)`,
-		locationID, organiserID)
+	_, err := GetDBRSession(nil).InsertInto("locorg").
+		Pair("location_id", locationID).
+		Pair("organizer_id", organiserID).
+		Exec()
+	ifErr.Panic("can't insert into locorg", err)
+}
+
+// AddUserRole - role: +/-1 -for listener, +/-2 - for organizer, +/-4 - for admin
+func AddUserRole(userID int, role int) {
+	roleStr := strconv.Itoa(role)
+	sqlSet := ""
+	if role > 0 {
+		// добавление role к существующим ролям:
+		sqlSet = "roles|" + roleStr
+	}
+	if role < 0 {
+		// вычитание role из существующих, только если существующие роли больше вычитаемой:
+		sqlSet = "if(0+roles>" + roleStr + ",roles-" + roleStr + ",'')"
+	}
+	if len(sqlSet) == 0 {
+		return
+	}
+
+	GetDBRSession(nil).Exec("UPDATE users SET roles="+sqlSet+" WHERE id=?", userID)
 }
 
 // AddInitAdmin - добавляет админа, если его нет в БД
 func AddInitAdmin() {
-	_, ok := FindUserByField("role_id", 1)
-	if !ok {
-		_,err:=AddUser(User{
+	uu := FindUsersByIntRole(4)
+	if len(uu) == 0 {
+		// нет админов, создаем:
+		_, err := AddUser(User{
 			Email:    "admin",
 			Fio:      "admin-fio",
-			RoleID:   1,
+			Roles:    4, //"admin",
 			Password: os.Getenv("ADMIN_SECRET"),
+			ResetKey: "", // reset_key для каждого случая использования перезаписывается
 		})
-		ifErr.Panic("can't create init admin",err )
+		ifErr.Panic("can't create init admin", err)
 	}
-
-}
-
-// AddInitRoles - добавляет начальную роль суперадмина
-// INSERT INTO roles (id,name,lvl) VALUES (1,"root", 4);
-func AddInitRoles() {
-	// admin:
-	_, alreadyExists := FindRoleByID(1)
-	if !alreadyExists {
-		AddRole(Role{
-			ID:   1,
-			Name: "Администратор",
-			Lvl:  "admin",
-		})
-	}
-	// listener:
-	_, alreadyExists = FindRoleByID(4)
-	if !alreadyExists {
-		AddRole(Role{
-			ID:   4,
-			Name: "Слушатель",
-			Lvl:  "listener",
-		})
-	}
-}
-
-// AddRole - добавляет роль в БД
-func AddRole(r Role) {
-	conn := GetConn()
-	defer conn.Close()
-	_, err := conn.ExecContext(Ctx,
-		"INSERT INTO roles (id, name, lvl) "+
-			"VALUES (?,?,?)",
-		r.ID, r.Name, r.Lvl)
-
-	ifErr.Panic("Can't insert new lecture", err)
 }
 
 // AddLecture - adds lecture to db
 func AddLecture(l Lecture) {
-	conn := GetConn()
-	defer conn.Close()
-	_, err := conn.ExecContext(Ctx,
-		"INSERT INTO lectures (location_id, `when`, group_name, max_seets, name, description) "+
-			"VALUES (?,?,?,?,?,?)",
-		l.LocationID, l.When, l.GroupName, l.MaxSeets, l.Name, l.Description)
-
-	ifErr.Panic("Can't insert new lecture", err)
+	_, err := GetDBRSession(nil).InsertInto("lectures").
+		Pair("location_id", l.LocationID).
+		Pair("when", l.When).
+		Pair("group_name", l.GroupName).
+		Pair("max_seets", l.MaxSeets).
+		Pair("name", l.Name).
+		Pair("description", l.Description).
+		Exec()
+	ifErr.Panic("can't insert into lectures", err)
 }
 
-// SaveLecture - saves lecture to db
-func SaveLecture(l Lecture) {
-	conn := GetConn()
-	defer conn.Close()
-	_, err := conn.ExecContext(Ctx,
-		"UPDATE lectures SET location_id=?, `when`=?, group_name=?, max_seets=?, name=?, description=? "+
-			"WHERE id=?",
-		l.LocationID, l.When, l.GroupName, l.MaxSeets, l.Name, l.Description, l.ID)
+// BuyTicket - user buy ticket for lecture
+func BuyTicket(userID int, lectureID int) (ok bool) {
+	if userID == 0 {
+		return false
+	}
+	// проверим что места еще остались:
+	var freeSeets int
+	err := GetDBRSession(nil).Select("lectures.max_seets - count(*)").From("tickets").
+		Join("lectures", "tickets.lecture_id=lectures.id").Where("lecture_id=?", lectureID).LoadOne(&freeSeets)
 
-	ifErr.Panic("Can't save lecture", err)
-}
+	if freeSeets <= 0 {
+		return false
+	}
 
-// DeleteLecture - deletes lecture from db
-func DeleteLecture(lectureID interface{}) {
-	_, err := GetConn().ExecContext(Ctx,
-		"DELETE FROM lectures WHERE id=?", lectureID)
-	ifErr.Panic("Can't delete lecture ", err)
+	_, err = GetDBRSession(nil).InsertInto("tickets").
+		Pair("user_id", userID).
+		Pair("lecture_id", lectureID).
+		Exec()
+
+	ifErr.Panic("Can't get last insert id", err)
+	return true
 }

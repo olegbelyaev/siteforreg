@@ -1,0 +1,41 @@
+{{ define "all_lectures" }}
+
+{{ range $i, $lecloc := .leclocs }}
+
+
+<div class="jumbotron">
+    <div class="display-4">{{ .Lecture.Name }}</div>
+    <p class="lead">{{ .Lecture.Description }}</p>
+    <hr class="my-4">
+    <p>{{ .Lecture.When }}</p>
+    <p>{{ .Location.Name }} {{ .Location.Address }}</p>
+    <p>
+        {{ if gt .FreeSeets 0 }}
+        Мест: {{ .FreeSeets }}
+        <a class="btn btn-primary btn-lg" href="/my/tickets/buy?lecture_id={{ .Lecture.ID }}" role="button">
+            Записаться
+        </a>
+        {{ else }}
+        Все места заняты
+        {{ end }}
+    </p>
+</div>
+
+{{ end }}
+
+{{ end }}
+
+
+{{ define "logo" }}
+
+<div class="container-fluid bg-light-blue">
+    <div class="row" style="background-color: #e3f2fd;">
+        <div class="col-1 ">
+            <img class="img" width="100%" src="/files/logo239.png">
+        </div>
+    </div>
+</div>
+
+</div>
+
+{{ end }}

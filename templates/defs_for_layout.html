@@ -8,9 +8,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
+    {{ template "_admitad_confirmation" }}
+
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
-        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+        integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
 
     <title>{{ .html_title }}</title>
 </head>
@@ -19,28 +21,29 @@
 <!-- конец нужного -->
 
 
-<!-- admin menu dropdown - часть меню, которая отображается или скрыта в зависимости от .LoggedUser.IsLogged -->
-{{ define "_admin_menu_dropdown" }}
- {{ if eq .LoggedUser.Role.Lvl "admin" }}
+<!-- listener menu dropdown - часть меню слушателя -->
+{{ define "_listener_menu_dropdown" }}
+{{ if ge .LoggedUser.User.Roles 1 }}
 
- <li class="nav-item dropdown">
+<li class="nav-item dropdown">
     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true"
         aria-expanded="false">
-        Admin
+        Слушатель
     </a>
     <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-        <a class="dropdown-item" href="/administrate/locations/">Площадки</a>
-        <a class="dropdown-item" href="/administrate/users/">Пользователи</a>
+        <a class="dropdown-item" href="/all_lectures">Все мероприатия</a>
+        <a class="dropdown-item" href="/my/tickets/">Мои билеты</a>
     </div>
- </li>
- {{ end }}
+</li>
+{{ end }}
 {{ end }}
 
 
 <!-- organizer menu dropdown - часть меню организатора -->
 {{ define "_organizer_menu_dropdown" }}
+{{ if ge .LoggedUser.User.Roles 2 }}
 
- <li class="nav-item dropdown">
+<li class="nav-item dropdown">
     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true"
         aria-expanded="false">
         Организатор
@@ -49,26 +52,32 @@
         <a class="dropdown-item" href="/manage/mylocorgs/">Где я организатор</a>
         <!-- <a class="dropdown-item" href="/путь/">лалала</a> -->
     </div>
- </li>
+</li>
+{{ end }}
 {{ end }}
 
-<!-- listener menu dropdown - часть меню слушателя -->
-{{ define "_listener_menu_dropdown" }}
+<!-- admin menu dropdown - часть меню, которая отображается или скрыта в зависимости от .LoggedUser.IsLogged -->
+{{ define "_admin_menu_dropdown" }}
+{{ if ge .LoggedUser.User.Roles 4 }}
 
 <li class="nav-item dropdown">
     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true"
         aria-expanded="false">
-        Слушатель
+        Admin
     </a>
     <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-        <a class="dropdown-item" href="/listener/all_lectures">Все лекции</a>
+        <a class="dropdown-item" href="/administrate/locations/">Площадки</a>
+        <a class="dropdown-item" href="/administrate/users/">Пользователи</a>
     </div>
 </li>
 {{ end }}
+{{ end }}
+
+
 
 <!-- шаблон меню главной страницы -->
 {{ define "_navbar_main" }}
- <!-- . = c.Keys
+<!-- . = c.Keys
  .LoggedUser 
  .warning_msg
  .info_msg -->
@@ -80,20 +89,25 @@
         <span class="navbar-toggler-icon"></span>
     </button>
 
-    
+
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
-        {{ template "_admin_menu_dropdown" . }}
 
-        {{ template "_organizer_menu_dropdown" }}
-        
-        {{ if .LoggedUser.IsLogged }}
-        <a href="/logout" class="btn btn-outline-dark my-2 my-sm-0" role="button">Logout</a>
-        {{ else }}
-        <a href="/login" class="btn btn-outline-dark my-2 my-sm-0" role="button">Вход</a>
-        <a href="/registration/start" class="btn btn-outline-dark my-2 my-sm-0" role="button">Получить пароль</a>
-        {{ end }}
-    
+            {{ if .LoggedUser.IsLogged }}
+            
+            {{ template "_listener_menu_dropdown" . }}
+            {{ template "_organizer_menu_dropdown" . }}
+            {{ template "_admin_menu_dropdown" . }}
+            
+            <a href="/logout" class="btn btn-outline-dark my-2 my-sm-0" role="button">Logout</a>
+
+            {{ else }}
+
+            <a href="/login" class="btn btn-outline-dark my-2 my-sm-0" role="button">Вход</a>
+            <a href="/registration/start" class="btn btn-outline-dark my-2 my-sm-0" role="button">Получить пароль</a>
+
+            {{ end }}
+
         </ul>
     </div>
 </nav>
@@ -102,7 +116,7 @@
 <!-- отображение предупреждающих сообщений (об ошибках пользователя)-->
 {{ if .warning_msg}}
 <div class="alert alert-warning" role="alert">
-    {{ .warning_msg }}
+    <h3><b> {{ .warning_msg }} </b></h3>
 </div>
 {{ end }}
 
@@ -116,14 +130,14 @@
 <!-- info-flash-сообщения -->
 {{ range .InfoFlashes }}
 <div class="alert alert-info" role="alert">
-    {{ . }}
+    <h3><b> {{ . }} </b></h3>
 </div>
 {{ end }}
 
 <!-- отображение сообщений информационного характера-->
 {{ if .info_msg}}
 <div class="alert alert-warning" role="alert">
-    {{ .info_msg }}
+    <h3><b> {{ .info_msg }} </b></h3> 
 </div>
 {{ end }}
 
@@ -135,11 +149,14 @@
 {{ define "_bootstrap" }}
 <!-- Optional JavaScript -->
 <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
     crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"
+    integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
     crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
+    integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
     crossorigin="anonymous"></script>
 {{ end }}
 </body>

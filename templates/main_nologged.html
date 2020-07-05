@@ -5,13 +5,18 @@
 
     {{ template "_navbar_main" . }}
 
+    {{ template "all_lectures" . }}
+
     <div class="container-fluid">
-        <h2>Хочешь попасть на интересную лекцию? </h2>
-        <p>Зарегистрируйся на нее заранее</p>
-        <h2>Как спланировать мероприятие?</h2>
-        <div>Создай мероприятие на своей лощадке и открывай регистрацию для слушателей</div>
-        <p>...</p>
+
+        <p class="text-muted">
+            
+            <a href="http://bookmeter.ru" class="text-reset">bookmeter.ru</a>
+            <a href="http://langmeter.ru" class="text-reset">langmeter.ru</a>
+            <a href="http://cupofsmile.ru" class="text-reset">cupofsmile.ru</a>
+        </p>
     </div>
+
 
     {{template "_bootstrap" . }}
 </body>

@@ -20,30 +20,50 @@ import (
 func ShowMainPage(c *gin.Context) {
 	loggedUser := GetLoggedUserFromSession(c)
 	log.Printf("%v", loggedUser)
+
+	leclocs := mydatabase.FindLecturesLocationsByField("", "", false)
+	c.Set("leclocs", leclocs)
+
 	if loggedUser.IsLogged {
-		// td: когда будут лекции выловить глюки
-		userTickets := mydatabase.FindUserLectionTicketsByField("user_id", loggedUser.User.ID)
-
-		log.Printf("user tickets: %v", userTickets)
-
-		c.Set("UserTickets", userTickets)
 		c.Set("LoggedUser", loggedUser)
-		if loggedUser.IsRoleFound {
-			switch loggedUser.Role.Lvl {
-			case "listener":
-				// registered any user (listener):
-				c.HTML(http.StatusOK, "main_logged_listener.html", c.Keys)
-			case "admin":
-				// admin:
-				c.HTML(http.StatusOK, "main_logged_admin.html", c.Keys)
-			default:
-				// все остальные роли:
-				c.HTML(http.StatusOK, "main_nologged.html", c.Keys)
-			}
-			return
-		}
+
+		c.HTML(http.StatusOK, "main_logged.html", c.Keys)
+		return
 	}
+
+	// незалогированый юзер
 	c.HTML(http.StatusOK, "main_nologged.html", c.Keys)
+}
+
+// ShowListenerTickets - показ билетов слушателя
+func ShowListenerTickets(c *gin.Context) {
+	loggedUser := GetLoggedUserFromSession(c)
+	if !loggedUser.IsLogged {
+		return
+	}
+	c.Set("LoggedUser", loggedUser)
+
+	userTickets := mydatabase.FindUserLectionTicketsByField(loggedUser.User.ID, "", nil)
+	c.Set("UserTickets", userTickets)
+	c.HTML(http.StatusOK, "show_listener_tickets.html", c.Keys)
+}
+
+// LectureTickets - отображение занятых мест на лекцию
+func LectureTickets(c *gin.Context) {
+	lectureIDStr := c.Query("lecture_id")
+	lectureID, err := strconv.Atoi(lectureIDStr)
+
+	if err != nil {
+		// если lecture_id - не число
+		mysession.AddWarningFlash(c, "lecture_id")
+		c.Redirect(http.StatusTemporaryRedirect, "/")
+		return
+	}
+
+	usersLecturesTickets := mydatabase.FindUserLectionTicketsByField(0, "lecture_id", lectureID)
+	// panic(fmt.Sprintf("%v", usersLecturesTickets))
+	c.Set("tickets", usersLecturesTickets)
+	c.HTML(http.StatusOK, "lecture_tickets.html", c.Keys)
 }
 
 // SetWarningMsg - установка сообщения, которое пробросится в шаблоны ключем "warning_msg"
@@ -59,9 +79,63 @@ func ShowUsers(c *gin.Context) {
 
 // ShowAllLectures - shows all lectures
 func ShowAllLectures(c *gin.Context) {
-	leclocs := mydatabase.FindLecturesLocationsByField("", "")
+	leclocs := mydatabase.FindLecturesLocationsByField("", "", false)
 	c.Set("leclocs", leclocs)
 	c.HTML(http.StatusOK, "show_all_lectures.html", c.Keys)
+}
+
+// BuyTicket - покупка пользователем билета на лекцию
+func BuyTicket(c *gin.Context) {
+	u := GetLoggedUserFromSession(c)
+	if !u.IsLogged {
+		c.Redirect(http.StatusTemporaryRedirect, "/")
+	}
+	lectureIDstr := c.Query("lecture_id")
+	lectureID, err := strconv.Atoi(lectureIDstr)
+	ifErr.Panic("lecture_id:", err)
+	//  нет ли уже забронированных пользователем мест:
+	userLectures := mydatabase.FindUserLectionTicketsByField(u.User.ID, "lecture_id", lectureID)
+	if len(userLectures) > 0 {
+		mysession.AddWarningFlash(c, "Вами уже забронировано место на это мероприятие")
+		// редиректим назад
+		c.Redirect(http.StatusTemporaryRedirect, c.Request.Referer())
+		return
+	}
+
+	ok := mydatabase.BuyTicket(u.User.ID, lectureID)
+	if !ok {
+		mysession.AddWarningFlash(c, "Что-то пошло не так, возможно, все места уже заняты.")
+	}
+	c.Redirect(http.StatusTemporaryRedirect, "/")
+}
+
+// ReleaseListenerTicket - удаление билета(регистрации) пользователя на мероприятие
+func ReleaseListenerTicket(c *gin.Context) {
+	u := GetLoggedUserFromSession(c)
+	ticketIDStr := c.PostForm("ticket_id")
+	ticketID, err := strconv.Atoi(ticketIDStr)
+	ifErr.Panic("can't convert ticket_id to int", err)
+	ok := mydatabase.ReleaseTicket(ticketID, u.User.ID)
+	if !ok {
+		SetWarningMsg(c, "Что-то пошло не так")
+	}
+	c.Redirect(http.StatusTemporaryRedirect, "/")
+}
+
+// ForceReleaseListenerTicket - удаление билета(регистрации) пользователя на мероприятие админом
+func ForceReleaseListenerTicket(c *gin.Context) {
+	userIDStr := c.PostForm("user_id")
+	println("==============" + userIDStr)
+	userID, err := strconv.Atoi(userIDStr)
+	ifErr.Panic("can't convert user_id to int", err)
+	ticketIDStr := c.PostForm("ticket_id")
+	ticketID, err := strconv.Atoi(ticketIDStr)
+	ifErr.Panic("can't convert ticket_id to int", err)
+	ok := mydatabase.ReleaseTicket(ticketID, userID)
+	if !ok {
+		SetWarningMsg(c, "Что-то пошло не так")
+	}
+	c.Redirect(http.StatusTemporaryRedirect, "/manage/lectures/tickets/?lecture_id="+c.PostForm("lecture_id"))
 }
 
 // GetUserFromSession - достает объект User из сессии
@@ -78,16 +152,11 @@ func GetUserFromSession(c *gin.Context) (mydatabase.User, bool) {
 // GetLoggedUserFromSession - получает из сессии email юзера.
 // Создает структуру User поиском в БД по email. Если не найден - ставит IsLogged=false.
 // Сохраняет юзера в поле User.
-// По полю User.RoleID находит роль в БД. Если не найден ставит IsRoleFound=false.
-// Сохраняет роль в поле Role.
 func GetLoggedUserFromSession(c *gin.Context) LoggedUser {
 	userFromSess, ok := GetUserFromSession(c)
 	var lu = LoggedUser{
 		IsLogged: ok,
 		User:     userFromSess,
-	}
-	if lu.IsLogged {
-		lu.Role, lu.IsRoleFound = mydatabase.FindRoleByID(lu.User.RoleID)
 	}
 	return lu
 }
@@ -115,8 +184,8 @@ func ShowMyLocOrgs(c *gin.Context) {
 	c.HTML(http.StatusOK, "show_locorgs.html", c.Keys)
 }
 
-// ShowMyLecures - shows lections manage page
-func ShowMyLectures(c *gin.Context) {
+// LecturesOnLocation - shows lections on loation
+func LecturesOnLocation(c *gin.Context) {
 	locationIDStr := c.Query("location_id")
 	c.Set("LocationID", locationIDStr)
 	c.Set("lectures", mydatabase.FindLecturesByField("location_id", locationIDStr))
@@ -157,7 +226,18 @@ func DeleteLecture(c *gin.Context) {
 		SetWarningMsg(c, "lecture_id!")
 		c.Redirect(http.StatusTemporaryRedirect, "/manage/lectures/?location_id="+locationID)
 	}
-	// todo: если на лекцию кто-то зарегистрирован, то что делать? рассылать уведомления?
+	// если на лекцию кто-то зарегистрирован, то что делать? рассылать уведомления?
+	// если билеты платные нужно деньги возвращать
+	// пока просто запрещаем непустую лекцию удалять
+
+	// найти слушателей:
+	tickets := mydatabase.FindUserLectionTicketsByField(0, "lecture_id", lectureID)
+	if len(tickets) > 0 {
+		mysession.AddWarningFlash(c, "Чтоы удалить эту лекцию, удалите все билеты слушателей")
+		c.Redirect(http.StatusTemporaryRedirect, "/manage/lectures/tickets/?lecture_id="+lectureID)
+		return
+	}
+
 	mydatabase.DeleteLecture(lectureID)
 	c.Redirect(http.StatusTemporaryRedirect, "/manage/lectures/?location_id="+locationID)
 }
@@ -192,17 +272,20 @@ func AddLocOrg(c *gin.Context) {
 		c.Set("user_id", userID)
 	}
 
+	// если не указана площадка спросить id площадки:
 	if len(locID) == 0 {
 		c.Set("locations", mydatabase.FindLocationsByField("", ""))
 		c.HTML(http.StatusOK, "select_location.html", c.Keys)
 		return
 	}
+	// если не указан юзер, спросить id юзера:
 	if len(userID) == 0 {
 		c.Set("users", mydatabase.FindUsersByField("", ""))
 		// panic(fmt.Sprintf("------------------>%s", c.Keys))
 		c.HTML(http.StatusOK, "select_user.html", c.Keys)
 		return
 	}
+
 	locIDint, err := strconv.Atoi(locID)
 	if err != nil {
 		panic("Can't parse as int:" + locID)
@@ -212,6 +295,9 @@ func AddLocOrg(c *gin.Context) {
 		panic("Can't parse as int:" + userID)
 	}
 	mydatabase.AddLocOrg(locIDint, userIDint)
+
+	// добавить юзеру роль организатора
+	mydatabase.AddUserRole(userIDint, mydatabase.UserRoleOrganizer)
 	ShowLocorgs(c)
 
 }
@@ -244,10 +330,14 @@ func DeleteLocorg(c *gin.Context) {
 // ShowLocations - список площадок
 func ShowLocations(c *gin.Context) {
 	userID := c.Query("user_id")
-	if len(userID) > 0 {
-		c.Set("locations", mydatabase.FindLocationsByField(userID, ""))
-	}
-	c.Set("locations", mydatabase.FindLocationsByField("", ""))
+	// if len(userID) > 0 {
+	locations := mydatabase.FindLocationsByField(userID, "")
+	// }else{
+
+	// }
+	c.Set("locations", locations)
+	// panic(fmt.Sprintf("%v", locations))
+	// c.Set("locations", mydatabase.FindLocationsByField("", ""))
 	c.HTML(http.StatusOK, "locations.html", c.Keys)
 }
 
@@ -288,7 +378,7 @@ func DeleteLocation(c *gin.Context) {
 	if len(foundLocorgs) > 0 {
 		// если на ней есть организаторы
 		// сообщение пользователю и редирект на список организаторов этой площадки:
-		mysession.AddInfoFlash(c, "Чтобы удалить площадку, удалите всех организаторов с данной лощадки")
+		mysession.AddWarningFlash(c, "Чтобы удалить площадку, удалите всех организаторов с данной лощадки")
 		c.Redirect(http.StatusTemporaryRedirect, "/administrate/locorgs/?location_id="+locationIDStr)
 		return
 	}
@@ -344,11 +434,7 @@ func SaveLocation(c *gin.Context) {
 	}
 
 	// ошибок нет, сохраняем данные в бд
-	_, err := mydatabase.UpdateLocation(formLocation)
-	if err != nil {
-		c.Set("warning_msg", err.Error())
-		// c.Abort()
-	}
+	mydatabase.UpdateLocation(formLocation)
 	ShowLocations(c)
 
 }
@@ -380,6 +466,7 @@ func GotoLoginIfNotLogged(c *gin.Context) {
 	if !u.(LoggedUser).IsLogged {
 		c.Redirect(http.StatusTemporaryRedirect, "/login")
 	}
+	// c.Abort()
 }
 
 // GotoAccessDeniedIfNotAdmin - проверяет уровень юзера >=4
@@ -387,39 +474,19 @@ func GotoLoginIfNotLogged(c *gin.Context) {
 func GotoAccessDeniedIfNotAdmin(c *gin.Context) {
 	u := GetLoggedUserFromSession(c)
 	// только в одном случае все ОК:
-	if u.IsLogged && u.IsRoleFound && u.Role.Lvl == "admin" {
+	if u.IsLogged && u.User.Roles >= 4 { // admin
 		return
 	}
-	// иначе редирект
-	// todo: установка s.Set с редиректом не работает,
-	// можно будет использовать флеш-сообщения через сесии
-	// c.Redirect(http.StatusTemporaryRedirect, "/")
-	// остановить цепочку
+	// если не админ:
+	mysession.AddWarningFlash(c, "Недостаточно прав")
+	c.Redirect(http.StatusTemporaryRedirect, "/")
 	c.Abort()
-	// перенаправить на главную:
-	c.Set("warning_msg", "Недостаточно прав")
-	ShowMainPage(c)
 }
 
 // LoggedUser - IsLogged field answers on question "Is user logged?"
 type LoggedUser struct {
-	IsLogged    bool
-	User        mydatabase.User
-	IsRoleFound bool
-	Role        mydatabase.Role
-}
-
-// GetLoggedUserRoleLvl - возвращает уровень роли пользователя
-// возвращает 0 если роьне найдена или пользователь не залогинен
-// todo: сейчас не проверить, т.к. нету пользователей с ролями меньшими 4
-func GetLoggedUserRoleLvl(lu LoggedUser) string {
-	if !lu.IsLogged {
-		return ""
-	}
-	if !lu.IsRoleFound {
-		return ""
-	}
-	return lu.Role.Lvl
+	IsLogged bool
+	User     mydatabase.User
 }
 
 // RegistrationEnd - обработка формы регистрации
@@ -428,31 +495,53 @@ func RegistrationEnd(c *gin.Context) {
 		Email:    c.PostForm("email"),
 		Password: GenerateSecret(),
 		Fio:      c.PostForm("fio"),
-		RoleID:   4,
+		Roles:    1,
+		ResetKey: "",
 	}
-	_, ok := mydatabase.FindUserByEmail(user.Email)
+
+	existingUser, ok := mydatabase.FindUserByEmail(user.Email)
+	siteAddress := "http://meetfor.ru"
 	if ok {
+
 		// Пользователь уже существует ( todo: добавить сброс пароля)
+		// генерим ключ сброса
+		existingUser.ResetKey = GenerateSecret() + GenerateSecret() // два подряд, и три влезло бы
+
+		// сохраняем ключ в бд
+		mydatabase.UpdateUser(existingUser)
+
+		// сама ссылка на сброс:
+		resetLink := siteAddress + "/reset/password/" + existingUser.ResetKey
+
+		// отправляем ссылку на сброс
+		emailText := fmt.Sprintf(
+			`Здравствуйте, %s !
+Вы запросили смену пароля на сайте %s .
+Перейдите по ссылке %s , 
+после чего новый пароль будет выслан на этот адрес
+			`, user.Fio, siteAddress, resetLink)
+
+		if sentOK := SendTextByEmail(c, emailText, user.Fio, user.Email, siteAddress); !sentOK {
+			mysession.AddInfoFlash(c, "Не получается отправить письмо со ссылкой.")
+			c.Redirect(http.StatusTemporaryRedirect, "/")
+		}
+
+		// показываем сообщение
 		c.HTML(http.StatusOK, "email_exists.html", c.Keys)
+
 	} else {
+
 		// TODO придумать как защититься от многочисленной отправки
 		// пользователем писем по разным адресам
-		siteAddress := "http://localhost:8081"
 		emailText := fmt.Sprintf(
 			`Здравствуйте, %s !
 Вы зарегистрировались на сайте %s .
 Ваш пароль: %s
 			`, user.Fio, siteAddress, user.Password)
 
-		sendErr := myemail.SendMailWithDefaultParams(
-			mail.Address{Name: user.Fio, Address: user.Email},
-			fmt.Sprintf("Регистрация на %s", siteAddress),
-			emailText,
-		)
-		if sendErr != nil {
-			c.Set("warning_msg", sendErr.Error())
-			ShowMainPage(c)
-			log.Print("Sending Error:" + sendErr.Error())
+		if sentOk := SendTextByEmail(c, emailText, user.Fio, user.Email, siteAddress); !sentOk {
+			mysession.AddInfoFlash(c, "Не получается отправить письмо.")
+			c.Redirect(http.StatusTemporaryRedirect, "/")
 		}
 
 		_, err := mydatabase.AddUser(user)
@@ -463,6 +552,57 @@ func RegistrationEnd(c *gin.Context) {
 		c.Redirect(http.StatusTemporaryRedirect, "/login")
 
 	}
+}
+
+// ResetPasswordLetter - пользователь перешел по ссылке для сброса пароля
+// Меняет пароль в БД на новый и высылает на почту
+func ResetPasswordLetter(c *gin.Context) {
+	resetKey := c.Param("key")
+
+	// поиск пользователя с таким reset_key
+	user, found := mydatabase.FindUserByField("reset_key", resetKey)
+	if !found {
+		mysession.AddInfoFlash(c, "Ссылка недействительна")
+		c.Redirect(http.StatusTemporaryRedirect, "/")
+	}
+
+	user.Password = GenerateSecret()
+	user.ResetKey = ""
+
+	mydatabase.UpdateUser(user)
+
+	siteAddress := "http://meetfor.ru"
+
+	emailText := fmt.Sprintf(
+		`Здравствуйте, %s !
+Вы запросили смену пароля на сайте %s .
+Ваш пароль: %s
+		`, user.Fio, siteAddress, user.Password)
+
+	if sentOk := SendTextByEmail(c, emailText, user.Fio, user.Email, siteAddress); !sentOk {
+		mysession.AddInfoFlash(c, "Не получается отправить письмо.")
+		c.Redirect(http.StatusTemporaryRedirect, "/")
+		return
+	}
+	mysession.AddInfoFlash(c, "Посмотрите почту.")
+	c.Redirect(http.StatusTemporaryRedirect, "/")
+}
+
+// SendTextByEmail - отравка пароля пользователю
+func SendTextByEmail(c *gin.Context, emailText string, userFio string, userEmail string, siteAddress string) bool {
+
+	sendErr := myemail.SendMailWithDefaultParams(
+		mail.Address{Name: userFio, Address: userEmail},
+		fmt.Sprintf("Регистрация на %s", siteAddress),
+		emailText,
+	)
+	if sendErr != nil {
+		c.Set("warning_msg", sendErr.Error())
+		ShowMainPage(c)
+		log.Print("Sending Error:" + sendErr.Error())
+		return false
+	}
+	return true
 }
 
 // LoginEnd - обработка данных формы логина
